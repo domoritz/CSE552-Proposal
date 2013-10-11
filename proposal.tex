@@ -46,9 +46,9 @@ Myria is a distributed big data management system currently being developed in t
 
 \section*{Objective}
 
-We propose a project that will help us to understand the execution of physical query plans in the Myria database.
+We propose a project that will help us to understand the execution of physical query plans in the Myria database. It will allow us to efficiently debug query execution.
 
-We will develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization.
+We will develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. We also plan to analyze the query execution and find patterns that suggest a certain problem.
 
 With our visualization we want to answer these questions:
 
@@ -57,6 +57,7 @@ With our visualization we want to answer these questions:
 	\item What is the bottleneck of the execution? Improving which part could best boost the performance?
 	\item How good is the load balancing? If it is skewed, how bad it can affect the performance?
 	\item How does an optimization rule affect query execution?
+	\item Is an execution IO, network or CPU bound?
 \end{enumerate}
 
 
@@ -64,6 +65,6 @@ With our visualization we want to answer these questions:
 
 We will develop an application to collect logs from all nodes in the system, store and analyze it. The visualization will be in the browser which means that we have to develop a front and back end.
 
-Even though we will not create a system that we can benchmark, we will be building an application that allows us to better understand the Myria database. We hope to answer questions about the Myria query execution and develop physical optimization rules based on the observations.
+Even though we will not create a system that we can benchmark, we will be building an application that allows us to better understand the Myria database. Because we will be able to debug query execution, we hope to answer questions about the Myria query execution and develop physical optimization rules based on the observations.
 
 \end{document}
