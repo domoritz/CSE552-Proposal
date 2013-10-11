@@ -1,0 +1,51 @@
+% --------------------------------------------------------------
+% This is all preamble stuff that you don't have to worry about.
+% Head down to where it says "Start here"
+% --------------------------------------------------------------
+
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb,url}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\begin{document}
+
+% --------------------------------------------------------------
+%                         Start here
+% --------------------------------------------------------------
+
+\title{1 page project proposal - Distributed Systems}
+\author{Shumo Chu and Dominik Moritz}
+\date{}
+
+\maketitle
+
+\section{Background}
+
+Database system need to transform user's high level queries, eg. SQL, Datalog into physical query plan for the execution of the query. Physical query plan is the actual execution map of a database system. Usually it can be viewed as a DAG which consisted by basic operators, such as JOIN, GROUP BY, SCAN, APPLY and relational tables (if the data). In distributed database system, the introduction of SHUFFLE operator and data partitioning will make query plan more complicated.
+
+Myria is a distributed big data management system currently being developed in the database group. Myria primarily aims towards applications in science. The project is led my Magdalena Balazinska, Bill Howe and Dan Suciu.
+
+\section{Objective}
+
+We propose a project that will help us to understand the execution of physical query plans in the Myria database.
+
+We plan to develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. 
+
+\end{document}
