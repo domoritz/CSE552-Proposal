@@ -1,4 +1,5 @@
-# CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Database System
+CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Database System
+==========================================================================================
 
 
 ## Background
