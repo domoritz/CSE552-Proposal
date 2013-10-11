@@ -16,6 +16,7 @@ CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Datab
 ## Platform
 
 * Use Myria, the under development distributed big data management system
+* Visualization as web aplication with front and backend. 
 
 ## Question we want to answer with our visualization
 
