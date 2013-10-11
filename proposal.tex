@@ -43,11 +43,12 @@ Database system need to transform user's high level queries, eg. SQL, Datalog in
 
 Myria is a distributed big data management system currently being developed in the database group. Myria primarily aims towards applications in science. The project is led my Magdalena Balazinska, Bill Howe and Dan Suciu.
 
+
 \section*{Objective}
 
 We propose a project that will help us to understand the execution of physical query plans in the Myria database.
 
-We will develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. 
+We will develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization.
 
 With our visualization we want to answer these questions:
 
@@ -59,5 +60,10 @@ With our visualization we want to answer these questions:
 \end{enumerate}
 
 
+\section*{Output}
+
+We will develop an application to collect logs from all nodes in the system, store and analyze it. The visualization will be in the browser which means that we have to develop a front and back end.
+
+Even though we will not create a system that we can benchmark, we will be building an application that allows us to better understand the Myria database. We hope to answer questions about the Myria query execution and develop physical optimization rules based on the observations.
 
 \end{document}
