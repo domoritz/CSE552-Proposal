@@ -41,8 +41,7 @@
 
 Database system need to transform user's high level queries, eg. SQL, Datalog into physical query plan for the execution of the query. Physical query plan is the actual execution map of a database system. Usually it can be viewed as a DAG which consisted by basic operators, such as JOIN, GROUP BY, SCAN, APPLY and relational tables (if the data). In distributed database system, the introduction of SHUFFLE operator and data partitioning will make query plan more complicated.
 
-Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} to scientific and many other applications. The project is led by Dan Suciu (PI), Magdalena Balazinska (Co-PI) and Bill Howe (Co-PI).
-
+Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} to scientific and many other applications. 
 
 \section*{Objective}
 
@@ -59,11 +58,5 @@ With our visualization we want to answer these questions:
 	\item How does an optimization rule affect query execution?
 \end{enumerate}
 
-
-\section*{Output}
-
-We will develop an application to collect logs from all nodes in the system, store and analyze it. The visualization will be in the browser which means that we have to develop a front and back end.
-
-Even though we will not create a system that we can benchmark, we will be building an application that allows us to better understand the Myria database. We hope to answer questions about the Myria query execution and develop physical optimization rules based on the observations.
 
 \end{document}
