@@ -23,6 +23,7 @@ CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Datab
 * The implicit dependencies between operators
 * What is the bottleneck of the execution? Improving which part could best boost the performance?
 * How good is the load balancing? If it is skewed, how bad it can affect the performance?
+* Is an execution IO/ Network or CPU bound?
 
 ## Tasks
 
