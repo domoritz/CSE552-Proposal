@@ -42,17 +42,19 @@
 
 \section*{Background}
 
-Database system need to transform user's high level queries, eg. SQL, Datalog into physical query plan for the execution of the query. Physical query plan is the actual execution map of a database system. Usually it can be viewed as a DAG which consisted by basic operators, such as JOIN, GROUP BY, SCAN, APPLY and relational tables (if the data). In distributed database system, the introduction of SHUFFLE operator and data partitioning will make query plan more complicated.
+Database system need to transform user's high level queries, eg. SQL, Datalog into physical query plan for the execution of the query. Physical query plan is the actual execution map of a database system. Usually it can be viewed as a DAG which consisted by basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables (if the data). In distributed database system, the introduction of \emph{SHUFFLE} operator and data partitioning will make query plan more complicated.
 
-Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} to scientific and many other applications. 
+Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} to scientific and many other applications.
 
 \section*{Objective}
 
 We propose a project that will help us to understand the execution of physical query plans in the Myria database. It will allow us to efficiently debug query execution.
 
-We will develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. We also plan to analyze the query execution and find patterns that suggest a certain problem.
+We will develop a system that allows us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. We also plan to analyze the query execution and find patterns that suggest a certain problem. The visualization will be embedded in a web application.
 
-With our visualization we want to answer these questions:
+Visualizing the physical execution will allows us to understand, debug and eventually improve how queries are executed.
+
+Questions that we want to answer with our visualization:
 
 \begin{enumerate}
 	\item What are the implicit dependencies between Operators?
