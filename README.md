@@ -15,10 +15,26 @@ CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Datab
 
 ## Platform
 
-* Use Myria, the under developing big data management system
+* Use Myria, the under development distributed big data management system
 
 ## Question we want to answer with our visualization
 
 * The implicit dependencies between operators
 * What is the bottleneck of the execution? Improving which part could best boost the performance?
-* How good is the load balancing. If it is skewed, how bad it can affect the performance?
+* How good is the load balancing? If it is skewed, how bad it can affect the performance?
+
+## Tasks
+
+* Log events of operators.
+* Collect the logs on one node.
+* Evaluate the logs and write summaries to local database.
+* Visualize query execution on a web page.
+* Analyze the query execution and find patterns that suggest a problem. Visualize the problem or give a desciption. 
+
+## Visualization
+
+* Gantt chart which also shows the hierarchy of the operators and possibly where an operator is executed.
+
+## Quantitative output
+
+There will not be a measurable output because 
