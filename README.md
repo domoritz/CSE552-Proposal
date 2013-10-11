@@ -38,4 +38,5 @@ CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Datab
 
 ## Quantitative output
 
-There will not be a measurable output because 
+* There will not be a measurable output.
+* We hope to answer questions about the Myria query execution and develop physical optimization rules based on the observations. 
