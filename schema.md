@@ -3,7 +3,9 @@ The data is one file containing the definition of events and a list of operators
 
 ```json
 {
-	"event_types": {},
+	"begin": 123234324,
+	"now": 78923492,
+	"event_types": [],
 	"operators": []
 }
 ```
@@ -13,19 +15,16 @@ The data is one file containing the definition of events and a list of operators
 Event types defines single events (happening at one time) and combined events (with begin and end).
 
 ```json
-{"event_types": {
-	"combined": [{
+{"event_types": [{
 		"name": "wait",
-		"begin": {
-			"id": 1
-		},
-		"end": {
-			"id": 2,
-		}, {...}],
-	"single": [{
+		"id": 1
+	}, {
+		"name": "work",
+		"id": 2
+	}, {
 		"name": "signal",
 		"id": 3
-	}, {...}]
+	}]
 }}
 ```
 
@@ -38,12 +37,20 @@ Contains the actual data.
 {"operators": [{
 	"type": "JOIN",
 	"name": "LocalHashJoin",
-	"events": [{
-		"type": 1,
-		"timestamp": 1382298631
-	}, {
-		"type": 2,
-		"timestamp": 1382298812
-	}]
+	"events": {
+		"combined": [{
+			"type": 1,
+			"begin": 1382298631,
+			"end": 1382286341
+		}, {
+			"type": 2,
+			"begin": 1382298812,
+			"end": null
+		}],
+		"single": [{
+			"time": 1382298631,
+			"type": 3
+		}]
+	}
 }]}
 ```
