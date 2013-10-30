@@ -1,0 +1,74 @@
+% --------------------------------------------------------------
+% This is all preamble stuff that you don't have to worry about.
+% Head down to where it says "Start here"
+% --------------------------------------------------------------
+
+\documentclass[11pt]{article}
+
+\usepackage{geometry}
+\usepackage{amsmath,amsthm,amssymb,url}
+\usepackage{fullpage}
+
+%\addtolength{\topmargin}{-.5in}
+%\addtolength{\textheight}{1.2in}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\begin{document}
+
+% --------------------------------------------------------------
+%                         Start here
+% --------------------------------------------------------------
+
+\title{One-page project proposal \--- Distributed Systems}
+\author{Shumo Chu and Dominik Moritz}
+\date{}
+
+\maketitle
+
+\section*{Background}
+
+Database system need to transform user's high level queries, eg. SQL, Datalog into physical query plan for the execution. Physical query plan is the actual execution map of a database system. Usually it can be viewed as a \emph{DAG} which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated. All operators are distributed over a number of nodes.
+
+Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} for scientific and many other applications.
+
+\section*{Objective}
+
+We propose a project that will help us to understand the execution of physical query plans in the Myria database. It will allow us to efficiently debug and improve query execution.
+
+We will develop a system that will allow us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. We also plan to analyze the query execution and find problems such as data skew. The visualization will be embedded in a web application. We plan to use a gantt chart to visualize events happening in operators over time. The visualization will also show the relationships between operators and their location.
+
+\vspace{10px}
+
+\noindent Questions that we want to answer with our visualization:
+
+\begin{enumerate}
+	\item What are the implicit dependencies between operators?
+	\item What is the bottleneck of the execution? Improving which part could best boost the performance?
+	\item How good is the load balancing? If it is skewed, how much does this affect the performance?
+	\item How does an optimization rule affect query execution?
+	\item Is an execution IO, network or CPU bound?
+\end{enumerate}
+
+Visualizing the physical execution will allows us to understand, debug and eventually improve how queries are executed.
+
+\section*{Problem formulation}
+Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed big data system.
+
+
+
+\end{document}
