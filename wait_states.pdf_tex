@@ -51,7 +51,7 @@
   \begin{picture}(1,0.43557727)%
     \put(0,0){\includegraphics[width=\unitlength]{wait_states.pdf}}%
     \put(0.43237158,0.2327705){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{work}}}%
-    \put(0.25382045,0.10523398){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{compute}}}%
-    \put(0.73845922,0.10523398){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{wait}}}%
+    \put(0.23742289,0.10523398){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{compute}}}%
+    \put(0.73299338,0.103412){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{wait}}}%
   \end{picture}%
 \endgroup%
