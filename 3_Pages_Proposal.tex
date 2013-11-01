@@ -90,7 +90,9 @@ Database system profiling has been extensively studied over decades. There are t
   \label{fig:myria_arc}
 \end{figure}
 
-\textbf{Distributed database system} is a database system deployed on a cluster of servers.  Figure \ref{fig:myria_arc} shows the system architecture of the distributed database system we use. There is a master server who parses the query and distribute the tasks the each computing node (worker). The data is also pre-partitioned and stored in each work.  The database query in the form of SQL or Datalog will be translated to the physical query plan and then be executed. Each query plan is consisted by basic operators forming a execution flow. An example of visualized query plan is showed in Figure \ref{fig:query_plan}. 
+\noindent\textbf{Distributed database system.} is a database system deployed on a cluster of servers.  Figure \ref{fig:myria_arc} shows the system architecture of the distributed database system we use. There is a master server who parses the query and distribute the tasks the each computing node (worker). The data is also pre-partitioned and stored in each work.  The database query in the form of SQL or Datalog will be translated to the physical query plan and then be executed.
+
+\noindent\textbf{Query Plan.} Query plan is the actually execution map for the distributed database system.  Each query plan is consisted by basic operators forming a execution flow.   For example,   the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan showed in Figure \ref{fig:query_plan}.  The semantic of the query plan is a distributed hash join of two tables, $R$ and $S$. We need to first hash each table according to the joined fields. Then shuffle tuples by their hash results to different workers. At each worker, join the shuffled tuples locally. 
 
 \begin{figure}
  \begin{center}
