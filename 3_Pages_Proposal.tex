@@ -61,7 +61,7 @@ We will develop a system that will allow us to collect information about the exe
 
 \vspace{10px}
 
-\noindent Questions that we want to answer with our visualization:
+\noindent Questions that we want to answer in this project:
 
 \begin{enumerate}
 	\item What are the data dependencies between operators in workers?
@@ -80,7 +80,26 @@ Visualizing the physical execution will allows us to understand, debug and event
 \subsection{Problem formulation}
 \label{sec:formulation}
 
-Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed big data system.
+Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed database system.
+
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=0.7\textwidth]{myria.png}
+   \end{center}
+  \caption{distributed database architecture}
+  \label{fig:myria_arc}
+\end{figure}
+
+\textbf{Distributed database system} is a database system deployed on a cluster of servers.  Figure \ref{fig:myria_arc} shows the system architecture of the distributed database system we use. There is a master server who parses the query and distribute the tasks the each computing node (worker). The data is also pre-partitioned and stored in each work.  The database query in the form of SQL or Datalog will be translated to the physical query plan and then be executed. Each query plan is consisted by basic operators forming a execution flow. An example of visualized query plan is showed in Figure \ref{fig:query_plan}. 
+
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=0.4\textwidth]{partition_join.png}
+   \end{center}
+  \caption{query plan: distributed hash join}
+  \label{fig:query_plan}
+\end{figure}
+
 
 % explain what we want to learn about operators, query fragments and workers
 % talk about shared memory model
