@@ -8,6 +8,8 @@
 \usepackage{geometry}
 \usepackage{amsmath,amsthm,amssymb,url}
 \usepackage{fullpage}
+\usepackage{tabularx}
+\usepackage{float}
 
 %\addtolength{\topmargin}{-.5in}
 %\addtolength{\textheight}{1.2in}
@@ -76,6 +78,7 @@ Visualizing the physical execution will allows us to understand, debug and event
 Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed big data system.
 
 % explain what we want to learn about operators, query fragments and workers
+% talk about shared memory model
 
 \subsection{Proposed implementation}
 	\subsubsection*{Logging}
@@ -85,7 +88,34 @@ Database system profiling has been extensively studied over decades. There are t
 	% how do we send the data to visualization server
 	% how does the visualization server process the data
 	
-	As described in Section~\ref{sec:formulation}, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we use logging. In the logs we look for events that indicate a state change and signals that caused a state change. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to talk about events that caused a state change.
+	As described in Section~\ref{sec:formulation}, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals that caused a state change. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe events that caused a state change.
+
+	Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning.
+
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{ l|X|X|X }
+ & \multicolumn{3}{ c }{operator type} \\
+\cline{2-4}
+state & producers & consumers & operations \newline (scan, join, apply, merge) \\
+\hline \hline
+receive & - & receiving data from producer over network & - \\
+\hline
+wait & child is producing & - & waiting for child to return \\
+\hline
+compute & hashing data & - & in \texttt{fetchNextReady}  \\
+\hline
+sleep & has data for consumer that is not ready & no data in producer & waiting for signal \\
+\hline
+send & sending data to consumer over network & - & - \\
+\end{tabularx}
+\caption{Possible states of operators and their meaning.}
+\label{tbl:state}
+\end{table}
+
+In order to capture these states we have to log events that indicate their beginning and their end. An operator can only be in one state at a time. Consequently, the states can be reconstructed from the logs without any information about which events belong to each other. Since we also log the time of the events we can reconstruct when an operator changes its state and determine how long it has been in a certain state.
+
+% compute and wait, overlapping
+% state changes
 
 	\subsubsection*{Visualization}
 	% Web client
