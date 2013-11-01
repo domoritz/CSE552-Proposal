@@ -87,17 +87,12 @@ Database system profiling has been extensively studied over decades. There are t
 
 \subsection{Proposed implementation}
 	\subsubsection*{Logging}
-	% signal/state
-	% what do we collect
-	% how do we collect
-	% how do we send the data to visualization server
-	% how does the visualization server process the data
-	
-	As described in Section~\ref{sec:formulation}, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals that caused a state change. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe events that caused a state change.
+
+	As described in Section~\ref{sec:formulation}, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe important events that happen at a certain point in time. For each state we want to visualize when the transitions happened.
 
 	Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning.
 
-\begin{table}[H]
+\begin{table}[h]
 \begin{tabularx}{\textwidth}{ l|X|X|X }
  & \multicolumn{3}{ c }{operator type} \\
 \cline{2-4}
@@ -121,7 +116,7 @@ In order to capture these states we have to log events that indicate their begin
 
 No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This is shown in Figure~\ref{fig:extd_compute}. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We will use this information in the visualization of operator states.
 
-\begin{figure}
+\begin{figure}[h]
   \begin{center}
     \def\svgwidth{0.4\columnwidth}
     \input{wait_states.pdf_tex}
@@ -130,8 +125,17 @@ No all transitions between states are possible. For example, the wait state can 
   \label{fig:extd_compute}
 \end{figure}
 
-% compute and wait, overlapping
+To be able to reconstruct the states mentioned in Table~\ref{tbl:state} we have to log all events that cause state changes. Furthermore, we will log signals. % todo: do we actually need signals?
+
+As mentioned in the beginning of this section, the states of query fragments and workers can be inferred from the state of the query fragments that are executed on a worker. A query fragment can be in the state receiving when the leave operator is a consumer (and not a scan). It can be in the state compute when any of its children are computing. It can be sleeping when the root is sleeping and it can be sending when the root is sending. Since a fragment is executed by one thread, it cannot be in multiple states.
+
+The state of a worker is ambiguous because multiple threads can be executing multiple query fragments that are in different states. We will use the state of the query fragments to show how many query fragments are working but we will not determine a single state for the whole worker.
+
 % state changes
+
+For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org/}}, a logging API which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. We plan to use \emph{Apache Flume}\footnote{\url{https://flume.apache.org/}} to collect the logs from the workers. Since the collecting server is a Myria worker, we can use its database to store the logs and then read from when we create the visualization. In order to do that, we will have to implement a custom Flume sink.
+
+% how does the visualization server process the data
 
 	\subsubsection*{Visualization}
 	% Web client
