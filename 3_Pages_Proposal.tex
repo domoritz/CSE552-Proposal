@@ -190,6 +190,8 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 	\subsubsection{Estimate computation/network overhead}
 	\label{sec:overhead}
 
+	To estimate the computation and network overhead, we will calculate the execution time with two assumptions. First, we assume that the network has an infinite bandwidth and the latency and the overhead are zero. In the LogP model, this is equal to setting L, o and g to zero. Since we have data dependencies between operators, we can only compute an upper and lower bound for the execution time without network. In the section assumption we assume to have infinite computation power. The calculation of the running time is similar.
+
 %\section{Result}
 %\section{Summary}
 
