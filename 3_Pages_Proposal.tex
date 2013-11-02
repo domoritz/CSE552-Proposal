@@ -188,10 +188,13 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 \subsubsection{Estimate computation/network overhead}
 \label{sec:overhead}
 
-A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. We want to ask the following questions first.
+A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, since communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
 
-\noindent\textbf{What if the network in infinitely fast}.  
-	
+\noindent\textbf{What if the network in infinitely fast}.  That is to assume that we can have a infinite bandwidth and zero latency underlying network. Based on the logging, we want to infer that how much could the running time be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster. 
+
+\noindent\textbf{What if the computation in infinitely fast }.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer that how much could the running time be improved. This would be a measure of how expensive the communication is.
+
+\noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist the temporal state information of each query fragment in each worker. And combined with the query plan which contains the dependency between different operators. We want to develop algorithms to infer the running time given different assumptions.
 %\section{Result}
 %\section{Summary}
 
