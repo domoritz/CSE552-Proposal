@@ -180,7 +180,11 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 	\emph{d3}\footnote{\url{http://d3js.org/}} will be used to build the custom visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we plan to integrate it in the existing web interface for myria\footnote{a demo can be found at \url{http://myria-web.appspot.com/}}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand. As can be seen, the wait state is shown within a compute state to show that the computes belong to the same call.
 
-	The gantt chart allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}. All in all, the visualization will allow us as developers to understand, debug and eventually improve how queries are executed
+	The gantt chart allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
+
+	To find out the bottleneck of an execution a developer can look at the gantt chart and find the operators that spend a non-proportional amount of time in the compute state. To find data skew, a developer can compare the execution of the same query fragment in different workers.
+
+	All in all, the visualization will allow us as developers to understand, debug and eventually improve how queries are executed.
 
 	%\subsubsection*{Analytics}
 	\subsubsection{Estimate computation/network overhead}
