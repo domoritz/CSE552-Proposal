@@ -16,6 +16,11 @@
 \definecolor{darkblue}{rgb}{0,0,0.5} 
 \usepackage{transparent}
 
+\usepackage{enumitem}
+\setlist{nolistsep}
+
+\setlength{\parskip}{3px}
+
 %\addtolength{\topmargin}{-.5in}
 %\addtolength{\textheight}{1.2in}
 
@@ -49,32 +54,31 @@
 
 \section{Background}
 
-Database system need to transform user's high level queries, eg. SQL, Datalog into physical query plan for the execution. Physical query plan is the actual execution map of a database system. Usually it can be viewed as a \emph{DAG} which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated. All operators are distributed over a number of nodes.
+Database system need to transform user's high level queries, eg. SQL, Datalog into a physical query plan for the execution. The physical query plan is the actual execution map of a database system. Usually it can be viewed as a \emph{DAG} which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated.
 
-Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} for scientific and many other applications.
+Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications.
 
 \section{Objective}
+\label{sec:objective}
 
-We propose a project that will help us to understand the execution of physical query plans in the Myria database. It will allow us to efficiently debug and improve query execution.
+This outline describes out project that will help us to understand the execution of physical query plans in the Myria database. It will allow us to efficiently debug and improve query execution.
 
-We will develop a system that will allow us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. We also plan to analyze the query execution and find problems such as data skew. The visualization will be embedded in a web application. We plan to use a gantt chart to visualize events happening in operators over time. The visualization will also show the relationships between operators and their location.
+We are developing a system that will allow us to collect information about the execution of a physical query plan in the distributed system. The data has to be collected on one node and then aggregated to provide the foundation for analyzing the data and creating a meaningful visualization. We also plan to analyze the query execution and find problems such as data skew. The visualization will be embedded in a web application.
 
 \vspace{10px}
 
-\noindent Questions that we want to answer in this project:
+\noindent Questions that we want to answer with this project:
 
 \begin{enumerate}
 	\item What are the data dependencies between operators in workers?
-	\item What is the bottleneck of the execution? Improving which part could best boost the performance?
+	\item What is the bottleneck of the execution? Improving which part could improve the performance the most?
 		%\item How does an optimization rule affect query execution?
 	%\item Is an execution network or CPU bound?
-	\item How does network and computation contribute to the total running time? We make two hypothesis, respectively. If we assume the network has infinite bandwidth and no latency, how would the running time change. If we assume that we have infinite computation power, how would the running time change.
 	\item Is there a slow worker during a certain stage of the execution that prevent the progress of the whole query plan?
+	\item How does network and computation contribute to the total running time? We make two hypothesis, respectively. If we assume the network has infinite bandwidth and no latency, how would the running time change. If we assume that we have infinite computation power, how would the running time change.
 	%\item How good is the load balancing? If it is skewed, how much does this affect the performance?
 
 \end{enumerate}
-
-Visualizing the physical execution will allows us to understand, debug and eventually improve how queries are executed.
 
 \section{Methodoloy}
 \subsection{Problem formulation}
@@ -93,12 +97,12 @@ Database system profiling has been extensively studied over decades. There are t
 
 \noindent\textbf{Distributed database system.} is a database system deployed on a cluster of servers.  Figure \ref{fig:myria_arc} shows the system architecture of the distributed database system we use. There is a master server who parses the query and distribute the tasks the each computing node (worker). The data is also pre-partitioned and stored in each work.  The database query in the form of SQL or Datalog will be translated to the physical query plan and then be executed.
 
-\noindent\textbf{Query Plan.} Query plan is the actually execution map for the distributed database system.  Each query plan is consisted by basic operators forming a execution flow.   For example,   the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan showed in Figure \ref{fig:query_plan}.  The semantic of the query plan is a distributed hash join of two tables, $R$ and $S$. We need to first hash each table according to the joined fields. Then shuffle tuples by their hash results to different workers. At each worker, join the shuffled tuples locally. 
+\noindent\textbf{Query Plan} is the actually execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally.
 
 
 \begin{figure}
  \begin{center}
-     \includegraphics[width=0.4\textwidth]{partition_join.png}
+     \includegraphics[width=0.35\textwidth]{partition_join.png}
    \end{center}
   \caption{query plan: distributed hash join}
   \label{fig:query_plan}
@@ -109,7 +113,7 @@ Database system profiling has been extensively studied over decades. There are t
 % talk about shared memory model
 
 \subsection{Proposed implementation}
-	\subsubsection*{Logging}
+	\subsubsection{Logging}
 
 	As described in Section~\ref{sec:formulation}, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe important events that happen at a certain point in time. For each state we want to visualize when the transitions happened.
 
@@ -160,14 +164,34 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 % how does the visualization server process the data
 
-	\subsubsection*{Visualization}
+	\subsubsection{Visualization}
 	% Web client
 	% Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
 	% What kind of information a potential user can get from the visualization.
-	
-	\subsubsection*{Analytics of Logging}
-	%\subsubsection*{Estimate computation/network overhead}
 
+	We will use a gantt chart to visualize the states and the times an operator or query fragment is in a state. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators.
+
+\begin{figure}[h]
+  \begin{center}
+    \def\svgwidth{0.9\columnwidth}
+    \input{gantt.pdf_tex}
+  \end{center}
+  \caption{A prototype gantt chart. Red is computing, blue is waiting, gray is sleeping, and yellow is receiving.}
+  \label{fig:gantt}
+\end{figure}
+
+	\emph{d3}\footnote{\url{http://d3js.org/}} will be used to build the custom visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we plan to integrate it in the existing web interface for myria\footnote{a demo can be found at \url{http://myria-web.appspot.com/}}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
+
+	This kind of visualization allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}. All in all, the visualization will allow us as developers to understand, debug and eventually improve how queries are executed
+
+%\subsubsection*{Analytics}
+\subsubsection{Estimate computation/network overhead}
+\label{sec:overhead}
+
+A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. We want to ask the following questions first.
+
+\noindent\textbf{What if the network in infinitely fast}.  
+	
 %\section{Result}
 %\section{Summary}
 
