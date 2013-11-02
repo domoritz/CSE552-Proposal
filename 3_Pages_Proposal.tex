@@ -115,7 +115,7 @@ Database system profiling has been extensively studied over decades. There are t
 \subsection{Proposed implementation}
 	\subsubsection{Logging}
 
-	As described in Section~\ref{sec:formulation}, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe important events that happen at a certain point in time. For each state we want to visualize when the transitions happened.
+	In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe important events that happen at a certain point in time. For each state we want to visualize when the transitions happened.
 
 	Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning.
 
@@ -160,7 +160,7 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 
 % state changes
 
-For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org/}}, a logging API which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. We plan to use \emph{Apache Flume}\footnote{\url{https://flume.apache.org/}} to collect the logs from the workers. Since the collecting server is a Myria worker, we can use its database to store the logs and then read from when we create the visualization. In order to do that, we will have to implement a custom Flume sink.
+For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. We plan to use \emph{Apache Flume}\footnote{\url{https://flume.apache.org}} to collect the logs from the workers. Since the collecting server is a Myria worker, we can use its database to store the logs and then read from when we create the visualization. In order to do that, we will have to implement a custom Flume sink.
 
 % how does the visualization server process the data
 
@@ -180,7 +180,7 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
   \label{fig:gantt}
 \end{figure}
 
-	\emph{d3}\footnote{\url{http://d3js.org/}} will be used to build the custom visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we plan to integrate it in the existing web interface for myria\footnote{a demo can be found at \url{http://myria-web.appspot.com/}}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
+	\emph{d3}\footnote{\url{http://d3js.org}} will be used to build the custom visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we plan to integrate it in the existing web interface for Myria\footnote{a demo can be found at \url{http://myria-web.appspot.com}}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
 
 	This kind of visualization allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}. All in all, the visualization will allow us as developers to understand, debug and eventually improve how queries are executed
 
