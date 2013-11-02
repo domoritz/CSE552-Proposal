@@ -164,7 +164,20 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 	% Web client
 	% Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
 	% What kind of information a potential user can get from the visualization.
-	
+
+	We will use a gantt chart to visualize the states and the times an operator or query fragment is in a state. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators.
+
+\begin{figure}[h]
+  \begin{center}
+    \def\svgwidth{0.9\columnwidth}
+    \input{gantt.pdf_tex}
+  \end{center}
+  \caption{A prototype gantt chart. Red is computing, blue is waiting, gray is sleeping, and yellow is receiving.}
+  \label{fig:gantt}
+\end{figure}
+
+	\emph{d3}\footnote{\url{http://d3js.org/}} will be used to build the custom visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we plan to integrate it in the existing web interface for myria\footnote{a demo can be found at \url{http://myria-web.appspot.com/}}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. 
+
 	%\subsubsection*{Analytics}
 	\subsubsection*{Estimate computation/network overhead}
 
