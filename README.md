@@ -37,7 +37,28 @@ CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Datab
 
 * Gantt chart which also shows the hierarchy of the operators and possibly where an operator is executed.
 
+
 ## Quantitative output
 
 * There will not be a measurable output.
 * We hope to answer questions about the Myria query execution and develop physical optimization rules based on the observations. 
+
+
+
+## TODO
+
+
+### Visualization 
+
+#### QF
+
+* start, end, duration
+* percentages of states on hover over name
+
+### Data (TBD)
+
+#### Routes
+
+* `/query/ID/qf/QUERY-FRAGMENT/worker/WORKER` specific data for one worker and one qf
+* `/query/ID/qf/QUERY-FRAGMENT/worker/` aggregated data for all workers
+* `/query/ID/qf/` aggregated data for each qf
