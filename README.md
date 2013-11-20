@@ -59,6 +59,5 @@ CSE552 Proposal - Profiling and Visualizing Query Execution in Distributed Datab
 
 #### Routes
 
-* `/query/ID/qf/QUERY-FRAGMENT/worker/WORKER` specific data for one worker and one qf
-* `/query/ID/qf/QUERY-FRAGMENT/worker/` aggregated data for all workers
-* `/query/ID/qf/` aggregated data for each qf
+* `/query/ID/states?qf=4&worker=1` specific data for one worker and one qf
+* `/query/ID/working?qf=4` aggregated per worker, working/ not working for root
