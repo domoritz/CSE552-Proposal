@@ -52,7 +52,7 @@
 
 \maketitle
 
-\section{Background}
+\section{Introduction}
 
 Database system need to transform user's high level queries, eg. SQL, Datalog into a physical query plan for the execution. The physical query plan is the actual execution map of a database system. Usually it can be viewed as a \emph{DAG} which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated.
 
@@ -80,9 +80,8 @@ We are developing a system that will allow us to collect information about the e
 
 \end{enumerate}
 
-\section{Methodoloy}
-\subsection{Problem formulation}
-\label{sec:formulation}
+\section{Background and goals}
+\label{sec:background}
 
 Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed database system.
 
@@ -99,6 +98,7 @@ Database system profiling has been extensively studied over decades. There are t
 
 \noindent\textbf{Query Plan} is the actually execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. In each query plan, a query fragment is a subtree that within the boundary of network communication.
 
+% TODO: gloals
 
 \begin{figure}
  \begin{center}
@@ -112,8 +112,12 @@ Database system profiling has been extensively studied over decades. There are t
 % explain what we want to learn about operators, query fragments and workers
 % talk about shared memory model
 
-\subsection{Proposed implementation}
+\subsection{Design and implementation}
+
+In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time. In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
+
 	\subsubsection{Logging}
+  \label{sec:logging}
 
 	In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe important events that happen at a certain point in time. For each state we want to visualize when the transitions happened.
 
@@ -165,6 +169,7 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 % how does the visualization server process the data
 
 	\subsubsection{Visualization}
+  \label{sec:visualization}
 	% Web client
 	% Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
 	% What kind of information a potential user can get from the visualization.
@@ -190,9 +195,9 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, since communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
 
-\noindent\textbf{What if the network in infinitely fast}.  That is to assume that we can have a infinite bandwidth and zero latency underlying network. Based on the logging, we want to infer that how much could the running time be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster. 
+\noindent\textbf{Assume no communication time}.  That is to assume that we can have a infinite bandwidth and zero latency underlying network. Based on the logging, we want to infer that how much could the running time be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster. 
 
-\noindent\textbf{What if the computation in infinitely fast }.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer that how much could the running time be improved. This would be a measure of how expensive the communication is.
+\noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer that how much could the running time be improved. This would be a measure of how expensive the communication is.
 
 \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist the temporal state information of each query fragment in each worker. And combined with the query plan which contains the dependency between different operators. We want to develop algorithms to infer the running time given different assumptions.
 %\section{Result}
