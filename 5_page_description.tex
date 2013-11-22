@@ -81,7 +81,7 @@ Database system need to transform user's high level queries, eg. SQL, Datalog in
 
 \noindent\textbf{Distributed database system.} is a database system deployed on a cluster of servers. Figure~\ref{fig:myria_arc} shows the system architecture of the distributed database system we are working with. The master parses the query and distributes tasks to computing nodes (workers). The data is pre-partitioned and stored in the workers. Database queries in the form of SQL, Myrial\footnote{Myrial is a PigLatin like declarative language} or Datalog are translated to the physical query plan and then executed.
 
-\noindent\textbf{Query Plan} is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments. Each query fragment runs in a thread on each worker.
+\noindent\textbf{Query Plan} is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments. Each query fragment runs in a thread on each worker. Note that the query fragments do not form a DAG because of recursion.
 
 \begin{figure}
  \begin{center}
@@ -175,13 +175,21 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 % Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
 % What kind of information a potential user can get from the visualization.
 
-At the moment, we support two visualizations. One shows the state of one query fragment on each worker. The second visualization shows the states of one query fragment on one worker.
+At the moment, we support two views. One shows the state of one query fragment on each worker. The second view shows the states of one query fragment on one worker.
 
-For the first visualization, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line graph. This form of visualization was confirmed to be a good way to find data skew. Skew can be identified in a drop in the number of working query fragments.
+For the first view, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line plot as seen in Figure~\ref{fig:line}. This form of visualization was confirmed to be a good way to find data skew. Skew can be identified in a drop in the number of workers calculating a query fragment.
 
-We use a gantt chart to visualize the states and the times an operator or query fragment is in a state. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators.
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=1\textwidth]{line.png}
+  \end{center}
+  \caption{A line chart showing the number of workers on which a query fragment is running on.}
+  \label{fig:line}
+\end{figure}
 
-The gantt chart is also used to visualize whether a query fragment on a worker is calculating or sleeping in the first visualization.
+We use a gantt chart to visualize the states and the times an operator or query fragment is in a state in the second view. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand. Figure~\ref{fig:gantt} shows the visualization of operators in a query fragment.
+
+The gantt chart is also used to visualize whether a query fragment on a worker is calculating or sleeping in addition to the plot in the first visualization. Instead of showing a hierarchy, only the states computing or sleeping are shown for the root operators of a query fragment on each worker.
 
 \begin{figure}[h]
   \begin{center}
@@ -192,13 +200,13 @@ The gantt chart is also used to visualize whether a query fragment on a worker i
   \label{fig:gantt}
 \end{figure}
 
-We use \emph{d3}\footnote{\url{http://d3js.org}} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
-
-This kind of visualization allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
+These kinds of visualization allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
 
 For the final visualization, we plan to add another view that shows the graph that shows on how many workers a query fragment is running for each query fragment. The three views can be seen as showing different granularities. The overview over all query fragments reveals dependencies and a developer might want to investigate a certain query fragment that seems to block others. For this query fragment the developer can investigate its execution of different workers and potentially find the one that is slowing down the whole execution. Then the developer can evaluate why a particular query fragment on a worker is not working.
 
 An more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be added in the final paper.
+
+We use \emph{d3}\footnote{\url{http://d3js.org}} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}. 
 
 %\subsubsection*{Analytics}
 \subsubsection{Estimate computation/network overhead}
@@ -214,8 +222,8 @@ A further question is  how can we get insightful information from the logging an
 %\section{Result}
 %\section{Summary}
 
-\section{Outlook}
-\label{sec:outlook}
+%\section{Outlook}
+%\label{sec:outlook}
 
 \bibliographystyle{plain}
 \bibliography{references}
