@@ -63,7 +63,7 @@ We are building a system to collect information about the query execution and vi
 
 \section{Background and goals}
 
-This section describes how queries are executed in the Myria system and how our project will help us to understand the execution of physical query plans. 
+This section describes how queries are executed in the Myria system and how our project will help us to understand the execution of physical query plans.
 
 \subsection{Background}
 \label{sec:background}
@@ -126,12 +126,12 @@ Our system has to collect information about the execution of a physical query pl
 
 In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time. In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
 
-	\subsubsection{Logging}
-  \label{sec:logging}
+\subsubsection{Logging}
+\label{sec:logging}
 
-	In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change and signals. We use the term \emph{state} to describe the state of an operator and the term \emph{signal} to describe important events that happen at a certain point in time. For each state we want to visualize when the transitions happened.
+In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change. For each state we want to visualize when the transitions happened.
 
-	Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning.
+Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning. Note that sleep and wait are different. Waiting means that an operator is waiting for child to return from a function call and sleep means that an operator has to be woken up by new incoming data.
 
 \begin{table}[h]
 \begin{tabularx}{\textwidth}{ l|X|X|X }
@@ -153,18 +153,9 @@ send & sending data to consumer over network & - & - \\
 \label{tbl:state}
 \end{table}
 
-In order to capture these states we have to log events that indicate their beginning and their end. An operator can only be in one state at a time. Consequently, the states can be reconstructed from the logs without any information about which events belong to each other. Since we also log the time of the events we can reconstruct when an operator changes its state and determine how long it has been in a certain state.
+In order to capture these states we have to log events that indicate their beginning and their end. An operator can only be in one state at a time. Consequently, the states can be reconstructed from the logs without any information about which events belong to each other. Since we also log the time of the events we can reconstruct when an operator changes its state and determine how long it has been in a certain state. We don't expect clock skew to be a problem because the intervals are coarse grained enough.
 
-No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This is shown in Figure~\ref{fig:extd_compute}. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We will use this information in the visualization of operator states.
-
-\begin{figure}[h]
-  \begin{center}
-    \def\svgwidth{0.35\columnwidth}
-    \input{wait_states.pdf_tex}
-  \end{center}
-  \caption{Extended automaton for alternative interpretation where the wait state and the compute state are sub states of a work state.}
-  \label{fig:extd_compute}
-\end{figure}
+No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We will use this information in the visualization of operator states.
 
 To be able to reconstruct the states mentioned in Table~\ref{tbl:state} we have to log all events that cause state changes. Furthermore, we will log signals. % todo: do we actually need signals?
 
@@ -174,17 +165,23 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 
 % state changes
 
-For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. We plan to use \emph{Apache Flume}\footnote{\url{https://flume.apache.org}} to collect the logs from the workers. Since the collecting server is a Myria worker, we can use its database to store the logs and then read from when we create the visualization. In order to do that, we will have to implement a custom Flume sink.
+For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. The collecting server is a Myria worker which means that we can use its database to store the logs and then read from when we create the visualization.
 
 % how does the visualization server process the data
 
-	\subsubsection{Visualization}
-  \label{sec:visualization}
-	% Web client
-	% Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
-	% What kind of information a potential user can get from the visualization.
+\subsubsection{Visualization}
+\label{sec:visualization}
+% Web client
+% Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
+% What kind of information a potential user can get from the visualization.
 
-	We will use a gantt chart to visualize the states and the times an operator or query fragment is in a state. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators.
+At the moment, we support two visualizations. One shows the state of one query fragment on each worker. The second visualization shows the states of one query fragment on one worker.
+
+For the first visualization, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line graph. This form of visualization was confirmed to be a good way to find data skew. Skew can be identified in a drop in the number of working query fragments.
+
+We use a gantt chart to visualize the states and the times an operator or query fragment is in a state. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators.
+
+The gantt chart is also used to visualize whether a query fragment on a worker is calculating or sleeping in the first visualization.
 
 \begin{figure}[h]
   \begin{center}
@@ -195,9 +192,13 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
   \label{fig:gantt}
 \end{figure}
 
-	\emph{d3}\footnote{\url{http://d3js.org}} will be used to build the custom visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we plan to integrate it in the existing web interface for Myria\footnote{a demo can be found at \url{http://myria-web.appspot.com}}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
+We use \emph{d3}\footnote{\url{http://d3js.org}} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}. Figure~\ref{fig:gantt} shows a mock-up of what the visualization of operators in a query fragment will look like. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
 
-	This kind of visualization allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}. All in all, the visualization will allow us as developers to understand, debug and eventually improve how queries are executed
+This kind of visualization allows developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
+
+For the final visualization, we plan to add another view that shows the graph that shows on how many workers a query fragment is running for each query fragment. The three views can be seen as showing different granularities. The overview over all query fragments reveals dependencies and a developer might want to investigate a certain query fragment that seems to block others. For this query fragment the developer can investigate its execution of different workers and potentially find the one that is slowing down the whole execution. Then the developer can evaluate why a particular query fragment on a worker is not working.
+
+An more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be added in the final paper.
 
 %\subsubsection*{Analytics}
 \subsubsection{Estimate computation/network overhead}
@@ -205,14 +206,13 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, since communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
 
-\noindent\textbf{Assume no communication time}.  That is to assume that we can have a infinite bandwidth and zero latency underlying network. Based on the logging, we want to infer that how much could the running time be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster. 
+\noindent\textbf{Assume no communication time}.  That is to assume that we can have a infinite bandwidth and zero latency underlying network. Based on the logging, we want to infer that how much could the running time be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster.
 
 \noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer that how much could the running time be improved. This would be a measure of how expensive the communication is.
 
 \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist the temporal state information of each query fragment in each worker. And combined with the query plan which contains the dependency between different operators. We want to develop algorithms to infer the running time given different assumptions.
 %\section{Result}
 %\section{Summary}
-
 
 \section{Outlook}
 \label{sec:outlook}
