@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{1149.8015625bp}%
+    \setlength{\unitlength}{1176.975bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,12 +48,12 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.19481623)%
+  \begin{picture}(1,0.1903184)%
     \put(0,0){\includegraphics[width=\unitlength]{gantt.pdf}}%
-    \put(-0.00191201,0.17255151){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Merge}}}%
-    \put(0.02591887,0.13080518){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Join}}}%
-    \put(0.06766521,0.08905885){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Scan(R)}}}%
-    \put(0.06766521,0.04731251){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Scan(S)}}}%
-    \put(0.02591887,0.00556618){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Consumer(T)}}}%
+    \put(0.02121965,0.16856773){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Merge}}}%
+    \put(0.048408,0.12778521){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Join}}}%
+    \put(0.08919051,0.0870027){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Scan(R)}}}%
+    \put(0.08919051,0.04622018){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Scan(S)}}}%
+    \put(0.048408,0.00543767){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Consumer(T)}}}%
   \end{picture}%
 \endgroup%
