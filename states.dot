@@ -1,0 +1,14 @@
+digraph states {
+	rankdir=LR;
+	node [shape = oval, peripheries=2]; S;
+	node [shape = oval, peripheries=1];
+	_nil [style="invis"];
+    _nil -> C;
+	C -> W;
+	W -> C;
+	C -> S;
+	S -> C;
+	S [label = "Sleep"];
+	W [label = "Wait"];
+	C [label = "Compute"];
+}
