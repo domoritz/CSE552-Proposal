@@ -69,20 +69,22 @@ This section describes how queries are executed in the Myria system and how our 
 \subsection{Background}
 \label{sec:background}
 
-Database system need to transform user's high-level queries, eg. SQL, Datalog into a physical query plan for the execution. The physical query plan is the actual execution map of a database system. Usually it can be viewed as a \emph{DAG}, which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated.
+The Myria database system needs to transform user's high-level queries, eg. SQL, Datalog, or Myrial\footnote{Myrial is a PigLatin like declarative language} into a physical query plan. The physical query plan is the actual execution map. Usually it can be viewed as a \emph{DAG}, which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated.
 
 \begin{figure}
  \begin{center}
      \includegraphics[width=0.7\textwidth]{myria.png}
    \end{center}
-  \caption{distributed database architecture}
+  \caption{Myria's distributed database architecture.}
   \label{fig:myria_arc}
 \end{figure}
 
 
-\noindent\textbf{Distributed database system.} is a database system deployed on a cluster of servers. Figure~\ref{fig:myria_arc} shows the system architecture of the distributed database system we are working with. The master parses the query and distributes tasks to computing nodes (workers). The data is pre-partitioned and stored in the workers. Database queries in the form of SQL, Myrial\footnote{Myrial is a PigLatin like declarative language} or Datalog are translated to the physical query plan and then executed.
+Myria is a database system deployed on a cluster of servers. Figure~\ref{fig:myria_arc} shows the system architecture of the distributed database system we are working with. The master parses the query and distributes tasks to computing nodes (workers). The data is pre-partitioned and stored in the workers. Database queries in the form of SQL, Myrial, or Datalog are translated to the physical query plan and then executed.
 
-\noindent\textbf{Query Plan} is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments. Each query fragment runs in a thread on each worker. Note that the query fragments do not form a DAG because of recursion.
+A query plan is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
+
+Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull based within one fragment and push based between fragments. This means that within one query fragment an operator calls its children to fetch data. A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments. Note that the query fragments together do not necessarily form a DAG because of recursion.
 
 \begin{figure}
  \begin{center}
@@ -92,14 +94,15 @@ Database system need to transform user's high-level queries, eg. SQL, Datalog in
   \label{fig:query_plan}
 \end{figure}
 
+
+The Myria database is written in Java and communicates using protocol buffers. The Myria web front end is written in python and runs on App engine.
+
 \subsection{Goals}
 \label{sec:objective}
 
 % TODO: goals
 
 Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed database system.
-
-Tools to visualize query plans for example in SQL Server as used to improve performance for the SDSS Sky survey\cite{szalay2002sdss} focus on optimizing queries and not query execution and have no visualization of data flow which is necessary to optimize physical query execution.
 
 Our system has to collect information about the execution of a physical query plan in Myria, which provides the foundation for analyzing the data and creating a meaningful visualization. The visualization will be embedded in a web application. We plan to analyze the query execution and find problems such as data skew.
 
@@ -126,8 +129,7 @@ We do not try to build a visualization that can visualize long running queries w
 
 \section{Related work}
 
-% Google dapper
-% Twitter zipkin
+Tools to visualize query plans for example in SQL Server as used to improve performance for the SDSS Sky survey\cite{szalay2002sdss} focus on optimizing queries and not query execution and have no visualization of data flow which is necessary to optimize physical query execution.
 
 \cite{sigelman2010dapper}
 \cite{zipkin}
@@ -142,13 +144,13 @@ In Section~\ref{sec:logging}, we will describe how we collect performance data u
 
 In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change. For each state we want to visualize when the transitions happened.
 
-Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning. Note that sleep and wait are different. Waiting means that an operator is waiting for child to return from a function call and sleep means that an operator has to be woken up by new incoming data.
+Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning. Note that sleep and wait are different. Waiting means that an operator is waiting for child operator to return from a function call and sleep means that an operator has to be woken up by new incoming data.
 
 \begin{table}[h]
 \begin{tabularx}{\textwidth}{ l|X|X|X }
  & \multicolumn{3}{ c }{operator type} \\
 \cline{2-4}
-state & producers & consumers & operations \newline (\emph{JOIN}, \emph{MERGE}, \emph{SCAN}, \emph{APPLY}, ...) \\
+state & producers (push to other fragments) & consumers (receive from other fragments) & operations \newline (\emph{JOIN}, \emph{MERGE}, \emph{SCAN}, \emph{APPLY}, ...) \\
 \hline \hline
 receive & - & receiving data from producer over network & - \\
 \hline
@@ -168,15 +170,15 @@ In order to capture these states we have to log events that indicate their begin
 
 No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We will use this information in the visualization of operator states.
 
-To be able to reconstruct the states mentioned in Table~\ref{tbl:state} we have to log all events that cause state changes. Furthermore, we will log signals. % todo: do we actually need signals?
+To be able to reconstruct the states mentioned in Table~\ref{tbl:state} we have to log all events that cause state changes.
 
-As mentioned in the beginning of this section, the states of query fragments and workers can be inferred from the state of the query fragments that are executed on a worker. A query fragment can be in the state receiving when the leave operator is a consumer (and not a scan). It can be in the state compute when any of its children are computing. It can be sleeping when the root is sleeping and it can be sending when the root is sending. Since a fragment is executed by one thread, it cannot be in multiple states.
+As mentioned in the beginning of this section, the states of query fragments and workers can be inferred from the state of the query fragments that are executed on a worker. A query fragment can be in the state receiving when the leaf operator is a consumer (and not a scan). It can be in the state compute when any of its children are computing. It can be sleeping when the root is sleeping and it can be sending when the root is sending. Since a fragment is executed by one thread, it cannot be in multiple states.
 
 The state of a worker is ambiguous because multiple threads can be executing multiple query fragments that are in different states. We will use the state of the query fragments to show how many query fragments are working but we will not determine a single state for the whole worker.
 
 % state changes
 
-For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization.
+For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not been implemented storing the data in the database yet and read the logs in each request from the web front end.
 
 % how does the visualization server process the data
 
@@ -188,7 +190,7 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 At the moment, we support two views. One shows the state of one query fragment on each worker. The second view shows the states of one query fragment on one worker.
 
-For the first view, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line plot as seen in Figure~\ref{fig:line}. This form of visualization was confirmed to be a good way to find data skew. Skew can be identified in a drop in the number of workers calculating a query fragment.
+For the first view, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line plot as seen in Figure~\ref{fig:line}. Skew can be identified in a drop in the number of workers calculating a query fragment.
 
 \begin{figure}[h]
   \begin{center}
@@ -232,9 +234,9 @@ A further question is  how can we get insightful information from the logging an
 
 \section{Evaluation}
 
-\section{Summary}
+%\section{Summary}
 
-%\section{Outlook}
+\section{Outlook}
 
 \label{sec:outlook}
 
@@ -242,6 +244,7 @@ A further question is  how can we get insightful information from the logging an
 % improve visualization of control flow and nesting
 % performance
 % integrate better into query execution
+% show how much data is already local
 
 \bibliographystyle{plain}
 \bibliography{references}
