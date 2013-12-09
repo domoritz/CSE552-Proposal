@@ -73,14 +73,15 @@ The Myria database system needs to transform user's high-level queries, eg. SQL,
 
 \begin{figure}
  \begin{center}
-     \includegraphics[width=0.7\textwidth]{myria.png}
+     \includegraphics[width=0.7\textwidth]{arch}
    \end{center}
-  \caption{Myria's distributed database architecture.}
+  \caption{Myria System Architecture.}
   \label{fig:myria_arc}
 \end{figure}
 
+Figure~\ref{fig:myria_arc} shows the overall system architecture consisting of the front-end and the Myria database consisting of the master and the distributed execution engine. The center component in Figure~\ref{fig:myria_arc} is the master. It hosts the REST interface used by the web UI and other tools, maintains metadata about the system resources and datasets in the cluster (e.g., used by the query optimizer in the web UI), and it mediates access to the cluster itself. Database queries in the form of SQL, Myrial, or Datalog are translated to the physical query plan.
 
-Myria is a database system deployed on a cluster of servers. Figure~\ref{fig:myria_arc} shows the system architecture of the distributed database system we are working with. The master parses the query and distributes tasks to computing nodes (workers). The data is pre-partitioned and stored in the workers. Database queries in the form of SQL, Myrial, or Datalog are translated to the physical query plan and then executed.
+The bottom part shows the architecture of Myria’s query execution engine, MyriaX. MyriaX is a pipelined, parallel, distributed dataflow evaluation system that takes a (possibly cyclic) graph of operators (query plan) and executes it efficiently on a shared-nothing cluster. This pipeline is divided into query fragments, which are chains of operators that can operate on a single compute node in a single thread. The data is pre-partitioned and stored in the workers.
 
 A query plan is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
 
