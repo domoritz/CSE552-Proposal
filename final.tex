@@ -15,7 +15,7 @@
 
 \usepackage{graphicx}
 \usepackage{xcolor}
-\definecolor{darkblue}{rgb}{0,0,0.5} 
+\definecolor{darkblue}{rgb}{0,0,0.5}
 \usepackage{transparent}
 
 \usepackage{enumitem}
@@ -129,6 +129,10 @@ We do not try to build a visualization that can visualize long running queries w
 % Google dapper
 % Twitter zipkin
 
+\cite{sigelman2010dapper}
+\cite{zipkin}
+\cite{ambrose}
+
 \section{Design and implementation}
 
 In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time. In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
@@ -234,7 +238,8 @@ A further question is  how can we get insightful information from the logging an
 
 \label{sec:outlook}
 
-% Better user experience, improve visualization of flow
+% Better user experience,
+% improve visualization of control flow and nesting
 % performance
 % integrate better into query execution
 
