@@ -11,6 +11,7 @@
 \usepackage{fullpage}
 \usepackage{tabularx}
 \usepackage{float}
+\usepackage{microtype}
 
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -128,11 +129,11 @@ We do not try to build a visualization that can visualize long running queries w
 % Google dapper
 % Twitter zipkin
 
-\subsection{Design and implementation}
+\section{Design and implementation}
 
 In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time. In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
 
-\subsubsection{Logging}
+\subsection{Logging}
 \label{sec:logging}
 
 In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change. For each state we want to visualize when the transitions happened.
@@ -175,7 +176,7 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 % how does the visualization server process the data
 
-\subsubsection{Visualization}
+\subsection{Visualization}
 \label{sec:visualization}
 % Web client
 % Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
@@ -214,7 +215,7 @@ A more detailed evaluation of how the visualization helped us to understand, deb
 We use \emph{d3}\footnote{\url{http://d3js.org}} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}.
 
 %\subsubsection*{Analytics}
-\subsubsection{Estimate computation/network overhead}
+\subsection{Estimate computation/network overhead}
 \label{sec:overhead}
 
 A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, since communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
@@ -225,7 +226,7 @@ A further question is  how can we get insightful information from the logging an
 
 \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
 
-\section{Result}
+\section{Evaluation}
 
 \section{Summary}
 
