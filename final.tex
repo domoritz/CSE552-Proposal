@@ -48,7 +48,7 @@
 % --------------------------------------------------------------
 
 \title{Visualizing Physical Query Execution in a Relational Distributed Big Data Management System}
-\subtitle{Short Project Description \--- Distributed Systems}
+\subtitle{Project Description \--- Distributed Systems}
 \author{Shumo Chu and Dominik Moritz}
 \date{}
 
@@ -118,9 +118,15 @@ Our system has to collect information about the execution of a physical query pl
 
 \end{enumerate}
 
+We do not try to build a visualization that can visualize long running queries with many states as we do not expect to get different insights into the general query execution, skew and data flow from queries that run longer.
 
 % explain what we want to learn about operators, query fragments and workers
 % talk about shared memory model
+
+\section{Related work}
+
+% Google dapper
+% Twitter zipkin
 
 \subsection{Design and implementation}
 
@@ -218,11 +224,18 @@ A further question is  how can we get insightful information from the logging an
 \noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer how much the running time could be improved. This would be a measure of how expensive the communication is.
 
 \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
-%\section{Result}
-%\section{Summary}
+
+\section{Result}
+
+\section{Summary}
 
 %\section{Outlook}
-%\label{sec:outlook}
+
+\label{sec:outlook}
+
+% Better user experience, improve visualization of flow
+% performance
+% integrate better into query execution
 
 \bibliographystyle{plain}
 \bibliography{references}
