@@ -49,7 +49,7 @@
 %                         Start here
 % --------------------------------------------------------------
 
-\title{Visualizing Physical Query Execution in a Relational Distributed Big Data Management System}
+\title{Visualizing Physical Query Execution in a Relational  Big Data Management System}
 \subtitle{Project Description \--- Distributed Systems}
 \author{Shumo Chu and Dominik Moritz}
 \date{}
@@ -259,10 +259,38 @@ The data format for the visualizations is a custom JSON\footnote{JavaScript obje
 
 \section{Evaluation}
 \label{sec:evaluation}
+We use our visualization framework to examine real world database queries. The three-level visualization greatly help us to gain knowledge on the execution of the query plan. We presented the following user cases which illustrates the interactive exploration of the query execution that an user can do .
 
-TODO: Shumo
+\noindent \textbf{Case 1: Identify slow worker(s)}.
+We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure \ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
 
-% talk about how we use it in demo for sigmod
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\textwidth]{slow_worker_overview.pdf}
+  \end{center}
+  \caption{query level visualization}
+  \label{fig:slow_worker_overview}
+\end{figure}
+
+To better understand this problem, we zoomed to the fragment level visualization of fragment 0 (Figure \ref{fig:slow_worker_fragment}).  This figure shows that worker 1 takes much longer to finish then others. Since we have further narrowed down the problem on worker 1. We zoom in further to see the operator level visualization of fragment 0 on worker 1.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\textwidth]{slow_worker_fragment.pdf}
+  \end{center}
+  \caption{fragment level visualization}
+  \label{fig:slow_worker_fragment}
+\end{figure}
+
+Figure \ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)} takes a long time to scan the first tuple from database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker 1.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\textwidth]{slow_worker_operator.pdf}
+  \end{center}
+  \caption{operator level visualization}
+  \label{fig:slow_worker_operator}
+\end{figure}
 
 
 \section{Outlook}
@@ -270,7 +298,7 @@ TODO: Shumo
 
 In this paper, we explained Myria's execution model and our log collection and log analysis infrastructure and our visualization. We also evaluated what our current visualization offers to developers. Nonetheless, further improvements of the performance (Section~\ref{sec:performance}) and the visualization (Section~\ref{sec:vizimprovement}) are possible.
 
-In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution.
+In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution. 
 
 
 \subsection{Visualization and integration}
@@ -288,7 +316,7 @@ Another small improvement that we plan to implement is to show how many tuples w
 
 We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
 
-Even though we defined performance not be our goal in the initial design, other developers have asked us to visualize long running queries.
+%Even though we defined performance not be our goal in the initial design, other developers have asked us to visualize long running queries.
 
 
 \subsection{Estimate computation/network overhead}
