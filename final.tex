@@ -62,7 +62,7 @@ Myria is a distributed big data management system currently being developed in t
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=.9\textwidth]{figure1}
+    \includegraphics[width=.95\textwidth]{figure1}
   \end{center}
   \caption{Visualization of fragment execution and worker utilization with focus on the first two seconds.}
   \label{fig:fig1}
@@ -262,7 +262,7 @@ The data format for the visualizations is a custom JSON\footnote{JavaScript obje
 We use our visualization framework to examine real world database queries. The three-level visualization greatly help us to gain knowledge on the execution of the query plan. We presented the following user cases which illustrates the interactive exploration of the query execution that an user can do .
 
 \noindent \textbf{Case 1: Identify slow worker(s)}.
-We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure \ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
+We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
 
 \begin{figure}[h]
   \begin{center}
@@ -272,7 +272,7 @@ We execute a distributed partition join as showed in Figure \ref{fig:query_plan}
   \label{fig:slow_worker_overview}
 \end{figure}
 
-To better understand this problem, we zoomed to the fragment level visualization of fragment 0 (Figure \ref{fig:slow_worker_fragment}).  This figure shows that worker 1 takes much longer to finish then others. Since we have further narrowed down the problem on worker 1. We zoom in further to see the operator level visualization of fragment 0 on worker 1.
+To better understand this problem, we zoomed to the fragment level visualization of fragment 0 (Figure~\ref{fig:slow_worker_fragment}). This figure shows that worker 1 takes much longer to finish then others. Since we have further narrowed down the problem on worker 1. We zoom in further to see the operator level visualization of fragment 0 on worker 1.
 
 \begin{figure}[h]
   \begin{center}
@@ -282,7 +282,7 @@ To better understand this problem, we zoomed to the fragment level visualization
   \label{fig:slow_worker_fragment}
 \end{figure}
 
-Figure \ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)} takes a long time to scan the first tuple from database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker 1.
+Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)} takes a long time to scan the first tuple from database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker 1.
 
 \begin{figure}[h]
   \begin{center}
