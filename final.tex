@@ -60,16 +60,15 @@
 
 Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective as understanding system behavior in a distributed database management system requires observing related executions across different workers.
 
-We are building a system to collect information about the query execution and visualize the data in a meaningful way that will allow us to efficiently debug and improve query execution. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
-
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=.8\textwidth]{figure1}
+    \includegraphics[width=.9\textwidth]{figure1}
   \end{center}
   \caption{Visualization of fragment execution and worker utilization with focus on the first two seconds.}
   \label{fig:fig1}
 \end{figure}
 
+We are building a system to collect information about the query execution and visualize the data in a meaningful way that will allow us to efficiently debug and improve query execution. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
 
 \section{Background and goals}
 
@@ -95,7 +94,7 @@ The bottom part shows the architecture of Myria’s query execution engine, Myri
 
 A query plan is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
 
-Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull based within one fragment and push based between fragments. This means that within one query fragment an operator calls its children to fetch data. A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments. Note that the query fragments together do not necessarily form a DAG because of recursion.
+Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull based within one fragment and push based between fragments. This means that within one query fragment an operator calls its children to fetch data (texttt{fetchNextReady}). A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. Fragment leaves and roots are typically I/O operators. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments. Note that the query fragments together do not necessarily form a DAG because of recursion.
 
 \begin{figure}
  \begin{center}
@@ -105,7 +104,7 @@ Each query fragment runs in a separate thread on each worker and is separated fr
   \label{fig:query_plan}
 \end{figure}
 
-The Myria database is written in Java and communicates using protocol buffers. The Myria web front end is written in python and runs on App engine.
+The Myria database is written in Java and communicates using protocol buffers. The Myria web front end is written in python and runs on Google App Engine\footnote{\url{https://developers.google.com/appengine/}}.
 
 
 \subsection{Goals}
@@ -197,11 +196,11 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 \subsection{Log collection}
 \label{sec:collect}
 
-For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not been implemented storing the data in the database yet and read the logs in each request from the web front end.
+For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
 
 This architecture of distributed loggers and collectors is similar to the collection pipeline proposed in Dapper\cite{sigelman2010dapper}.
 
-Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous JavaScript calls to a server.} from the Myria through the App engine server for myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
+Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous JavaScript calls to a server.} from the Myria through the App Engine server for Myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
 
 
 \subsection{Visualization}
@@ -230,12 +229,13 @@ The query plan level visualization as seen in Figure~\ref{fig:frags} shows a lin
 
 If a critical fragment is identified, a user can switch to the visualization at the query fragment level. This level shows the execution state of the same query fragment on different workers in a Gantt chart as seen in Figure~\ref{fig:fig1}. Possible states of a fragment are \emph{computing}, \emph{waiting}, and \emph{sleeping}. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. The state of a fragment is defined by the state of the root operator. Users can finally narrow down to identify which worker to explore next.
 
+If tuples are returned from a call to \texttt{fetchNextReady}, we show the number of tuples in a tooltip. The same tooltip is used to show begin and end time and the duration for each state in the Gantt chart.
 
 \subsubsection{Operator level}
 
 The operator level visualization as seen in Figure~\ref{fig:gantt} shows a Gantt chart of the operator states for a specific query fragment. The operators of the query fragment are shown in the same hierarchy as they appear in the query subtree. For every point in time, the Gantt chart shows the operator states, \emph{computing}, \emph{waiting} (an operator waits for a call to its child to return), \emph{sleeping}, \emph{receiving}, or \emph{sleeping}. This view allows users to see which operator is the bottleneck of the query fragment and how long/how frequent an operator is waiting for data.
 
-For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
+For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states is shown on demand in a tooltip.
 
 \begin{figure}[h]
   \begin{center}
@@ -308,7 +308,7 @@ We plan better integration of the visualization into the web interface and autom
 
 In addition to a better integration into the user interface, we plan to improve the Gantt chart for operator visualization to better present dependencies and explicitly show nesting. We already have some mock-ups that we created in response to what we saw in our charts but plan to first finish the back end to make it easier to adapt the data format.
 
-Another small improvement that we plan to implement is to show how many tuples were sent to the same worker and how many tuples had to be sent to other servers.
+Another small improvement that we plan to implement is to show how many tuples were sent to the same worker and how many tuples had to be sent to other servers instead of just one number.
 
 
 \subsection{Performance}
@@ -322,7 +322,7 @@ We plan to improve the performance of the backend by storing the data in the Myr
 \subsection{Estimate computation/network overhead}
 \label{sec:overhead}
 
-A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, since communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
+A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
 
 \noindent\textbf{Assume no communication time}.  That is to assume that we can have an underlying network with infinite bandwidth and zero latency. Based on the logging, we want to infer how much the running time could be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster.
 
