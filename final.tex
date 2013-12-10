@@ -58,7 +58,7 @@
 
 \section{Introduction}
 
-Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective as understanding system behavior in a distributed database management system requires observing related executions across different workers.
+Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective, as understanding system behavior in a distributed database management system requires observing related executions across different workers.
 
 \begin{figure}[H]
   \begin{center}
@@ -94,7 +94,7 @@ The bottom part shows the architecture of Myria’s query execution engine, Myri
 
 A query plan is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
 
-Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull based within one fragment and push based between fragments. This means that within one query fragment an operator calls its children to fetch data (texttt{fetchNextReady}). A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. Fragment leaves and roots are typically I/O operators. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments. Note that the query fragments together do not necessarily form a DAG because of recursion.
+Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull-based within one fragment and push-based between fragments. This means that within one query fragment an operator calls its children to fetch data (texttt{fetchNextReady}). A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. Fragment leaves and roots are typically I/O operators. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments. Note that the query fragments together do not necessarily form a DAG because of recursion.
 
 \begin{figure}
  \begin{center}
@@ -138,11 +138,11 @@ We do not try to build a visualization that can visualize long running queries w
 
 \section{Related work}
 
-Tools to visualize query plans for example in SQL Server as used to improve performance for the SDSS Sky survey\cite{szalay2002sdss} focus on optimizing queries and not query execution and have no visualization of data flow which is necessary to optimize physical query execution.
+Tools to visualize query plans for example in SQL Server as used to improve performance for the SDSS Sky survey\cite{szalay2002sdss} focus on optimizing queries and not query execution and have no visualization of data flow, which is necessary to optimize physical query execution.
 
 Twitter developed Ambrose\cite{ambrose}, a platform for visualization and real-time monitoring of MapReduce data workflows. They offer three different views to show associated jobs, job dependencies and progress. Ambrose has been released as open source. Ambrose, however, is not suitable for our needs as the abstraction level of jobs is too high and does not capture single operators.
 
-Google's Dapper\cite{sigelman2010dapper} is a distributed systems tracing infrastructure offers more fine grained tracing of calls in their distributed system. Twitter closely modelled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin has a similar architecture and offers similar visualizations. However, we offer different abstraction levels which enables users to find problems faster and handle larger amounts of profiling data. Also, our visualization is optimized to help developers understand query execution in Myria as opposed to general traces in distributed systems.
+Google's Dapper\cite{sigelman2010dapper} is a distributed systems tracing infrastructure offers more fine grained tracing of calls in their distributed system. Twitter closely modeled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin has a similar architecture and offers similar visualizations. However, we offer different abstraction levels, which enables users to find problems faster and handle larger amounts of profiling data. Also, our visualization is optimized to help developers understand query execution in Myria as opposed to general traces in distributed systems.
 
 
 \section{Design and implementation}
@@ -233,7 +233,7 @@ If tuples are returned from a call to \texttt{fetchNextReady}, we show the numbe
 
 \subsubsection{Operator level}
 
-The operator level visualization as seen in Figure~\ref{fig:gantt} shows a Gantt chart of the operator states for a specific query fragment. The operators of the query fragment are shown in the same hierarchy as they appear in the query subtree. For every point in time, the Gantt chart shows the operator states, \emph{computing}, \emph{waiting} (an operator waits for a call to its child to return), \emph{sleeping}, \emph{receiving}, or \emph{sleeping}. This view allows users to see which operator is the bottleneck of the query fragment and how long/how frequent an operator is waiting for data.
+The operator level visualization, as seen in Figure~\ref{fig:gantt}, shows a Gantt chart of the operator states for a specific query fragment. The operators of the query fragment are shown in the same hierarchy as they appear in the query subtree. For every point in time, the Gantt chart shows the operator states, \emph{computing}, \emph{waiting} (an operator waits for a call to its child to return), \emph{sleeping}, \emph{receiving}, or \emph{sleeping}. This view allows users to see which operator is the bottleneck of the query fragment and how long/how frequent an operator is waiting for data.
 
 For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states is shown on demand in a tooltip.
 
@@ -259,10 +259,10 @@ The data format for the visualizations is a custom JSON\footnote{JavaScript obje
 
 \section{Evaluation}
 \label{sec:evaluation}
-We use our visualization framework to examine real world database queries. The three-level visualization greatly help us to gain knowledge on the execution of the query plan. We presented the following user cases which illustrates the interactive exploration of the query execution that an user can do .
+We use our visualization framework to examine real world database queries. The three-level visualization greatly help us to gain knowledge on the execution of the query plan. We presented the following user cases, which illustrates the interactive exploration of the query execution that an user can do .
 
 \noindent \textbf{Case 1: Identify slow worker(s)}.
-We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
+We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail, which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
 
 \begin{figure}[h]
   \begin{center}
@@ -304,7 +304,7 @@ In Section~\ref{sec:overhead}, we will explain a method that we use to determine
 \subsection{Visualization and integration}
 \label{sec:vizimprovement}
 
-We plan better integration of the visualization into the web interface and automatically redirect users to the overview visualization when they submit a long running queries. The visualization can then be used to help estimating the progress of the query execution.
+We plan better integration of the visualization into the web interface and automatically redirect users to the overview visualization when they submit a long running query. The visualization can then be used to help estimating the progress of the query execution.
 
 In addition to a better integration into the user interface, we plan to improve the Gantt chart for operator visualization to better present dependencies and explicitly show nesting. We already have some mock-ups that we created in response to what we saw in our charts but plan to first finish the back end to make it easier to adapt the data format.
 
@@ -328,7 +328,7 @@ A further question is  how can we get insightful information from the logging an
 
 \noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer how much the running time could be improved. This would be a measure of how expensive the communication is.
 
-\noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
+\noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan, which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
 
 \bibliographystyle{plain}
 \bibliography{references}
