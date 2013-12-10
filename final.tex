@@ -12,8 +12,9 @@
 \usepackage{tabularx}
 \usepackage{float}
 \usepackage{microtype}
+\usepackage[pdftex]{hyperref}
 
-\usepackage{graphicx}
+\usepackage[final]{graphicx}
 \usepackage{xcolor}
 \definecolor{darkblue}{rgb}{0,0,0.5}
 \usepackage{transparent}
@@ -165,9 +166,9 @@ Not all operators have the same states. A consumer for example does not have a w
 \begin{tabularx}{\textwidth}{ l|X|X|X }
  & \multicolumn{3}{ c }{operator type} \\
 \cline{2-4}
-state & producers (push to other fragments) & consumers (receive from other fragments) & operations \newline (\emph{JOIN}, \emph{MERGE}, \emph{SCAN}, \emph{APPLY}, ...) \\
+state & producers (pushes to other fragments) & consumers (receive from other fragments) & operations \newline (\emph{JOIN}, \emph{MERGE}, \emph{SCAN}, \emph{APPLY}, ...) \\
 \hline \hline
-receive & - & receiving data from producer over network & - \\
+receive & - & receives data from producer over network & - \\
 \hline
 wait & child is producing & - & waiting for child to return \\
 \hline
@@ -206,18 +207,15 @@ Logs are collected on the Myria master that offers a REST API to access the aggr
 \subsection{Visualization}
 \label{sec:visualization}
 
-Users can switch between three levels of query execution visualization to identify the problem at the granularity that best reveals the information they need.
+Users can switch between three levels of query execution visualization to identify the problem at the granularity that best reveals the information they need. These kinds of visualization allow developers to answer the questions from Section~\ref{sec:objective}.
 
-These kinds of visualization allow developers to answer the questions from Section~\ref{sec:objective}.
 % except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
 
 A more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be given in Section~\ref{sec:evaluation}.
 
 \subsubsection{Query plan level}
 
-The query plan level visualization shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck.
-
-For the first view, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line plot as seen in Figure~\ref{fig:frags}. Skew can be identified in a drop in the number of workers calculating a query fragment.
+The query plan level visualization as seen in Figure~\ref{fig:frags} shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck. Skew can be identified in a drop in the number of workers calculating a query fragment.
 
 \begin{figure}[h]
   \begin{center}
@@ -227,11 +225,11 @@ For the first view, we want to show on how many workers the query fragment is ru
   \label{fig:frags}
 \end{figure}
 
+
 \subsubsection{Query fragment level}
 
-If a critical fragment is identified, a user can switch to the visualization at the query fragment level. This level shows the execution state of the same query fragment on different workers in a Gantt chart. Possible states of a fragment are \emph{computing}, \emph{sleeping}, \emph{sending}, and \emph{receiving}. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them.
+If a critical fragment is identified, a user can switch to the visualization at the query fragment level. This level shows the execution state of the same query fragment on different workers in a Gantt chart as seen in Figure~\ref{fig:fig1}. Possible states of a fragment are \emph{computing}, \emph{waiting}, and \emph{sleeping}. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. The state of a fragment is defined by the state of the root operator. Users can finally narrow down to identify which worker to explore next.
 
-Users can finally narrow down to identify which worker to explore next.
 
 \subsubsection{Operator level}
 
@@ -254,7 +252,7 @@ For the visualization of operators we want to show the hierarchical relationship
 
 We use D3\cite{bostock2011d3} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}.
 
-We used the visualization technique of \emph{docs+context}\cite{furnas1986generalized} to allow users to zoom into a detail of the query execution without loosing the context of the whole query.
+We used the visualization technique of \emph{focus+context}\cite{furnas1986generalized} to allow users to zoom into a detail of the query execution without loosing the context of the whole query.
 
 The data format for the visualizations is a custom JSON\footnote{JavaScript object notation} format with nested operators and an array of states per operator. The line charts use CSV\footnote{Comma separated values}.
 
