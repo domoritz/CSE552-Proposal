@@ -50,12 +50,7 @@
 \section{Introduction}
 We developed a visualization system providing user intuitive interfaces for understand and explore query execution in distributed database system. Our system collects profiling logs of query execution in distributed then aggregate and then shows query processing at three granularities to enable inspection at the resolution that best reflects problems or insights. This would allow users and developers to efficiently debug and improve query processing. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
 
-
-In particular, our visualization system is built on top of Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective, as understanding system behavior in a distributed database management system requires observing related executions across different workers.
-
-Notably, the abstraction layer of Myria which our visualization system interact with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
-
-\begin{figure}[h]
+\begin{figure}[H]
   \begin{center}
     \includegraphics[width=.95\textwidth]{figure1}
   \end{center}
@@ -63,6 +58,9 @@ Notably, the abstraction layer of Myria which our visualization system interact 
   \label{fig:fig1}
 \end{figure}
 
+In particular, our visualization system is built on top of Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective, as understanding system behavior in a distributed database management system requires observing related executions across different workers.
+
+Notably, the abstraction layer of Myria which our visualization system interact with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
 
 
 \section{Background and goals}
