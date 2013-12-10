@@ -286,7 +286,18 @@ Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see 
   \label{fig:slow_worker_operator}
 \end{figure}
 
-\noindent \textbf{Case 2: Identify slow worker(s)}.
+\noindent \textbf{Case 2: Identify bottleneck operator}.
+A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the similar logic, of Case 1, we can zoom down till operator level to find the bottle neck operator. Figure \ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case 1 without slow worker. We can observe that the \emph{Insert} operator takes the most of time of the query fragment, which implies that this query plan is I/O bounded. Writing the result to the database is the bottleneck of this query.
+
+\begin{figure}[h]
+  \begin{center}
+	\includegraphics[width=\textwidth]{bottleneck_operator.pdf}
+  \end{center}
+ \caption{operator level visualization}
+  \label{fig:bottleneck_operator}
+ \end{figure}
+
+
 
 \section{Outlook}
 \label{sec:outlook}
