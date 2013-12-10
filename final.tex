@@ -125,7 +125,7 @@ Our system has to collect information about the execution of a physical query pl
   %\item Is an execution network or CPU bound?
   \item Is there a slow worker during a certain stage of the execution that prevent the progress of the whole query plan?
   \item Is the data skewed in a way that prevents efficient usage of available workers?
-  \item How does network and computation contribute to the total running time? We make two hypothesis, respectively. If we assume the network has infinite bandwidth and no latency, how would the running time change? If we assume that we have infinite computation power, how would the running time change?
+  %\item How does network and computation contribute to the total running time? We make two hypothesis, respectively. If we assume the network has infinite bandwidth and no latency, how would the running time change? If we assume that we have infinite computation power, how would the running time change?
   %\item How good is the load balancing? If it is skewed, how much does this affect the performance?
 
 \end{enumerate}
@@ -302,7 +302,8 @@ A specific operator could be the bottleneck of the whole query execution even in
 \section{Outlook}
 \label{sec:outlook}
 
-In this paper, we explained Myria's execution model and our log collection and log analysis infrastructure and our visualization. We also evaluated what our current visualization offers to developers. Nonetheless, further improvements of the performance (Section~\ref{sec:performance}) and the visualization (Section~\ref{sec:vizimprovement}) are possible. In Section~\ref{sec:overhead}, we will explain a method that we  plan to use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution. 
+In this paper, we explained Myria's execution model and our log collection and log analysis infrastructure and our visualization. We also evaluated what our current visualization offers to developers. Nonetheless, further improvements of the performance (Section~\ref{sec:performance}) and the visualization (Section~\ref{sec:vizimprovement}) are possible.
+%In Section~\ref{sec:overhead}, we will explain a method that we  plan to use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution.
 
 
 \subsection{Visualization and integration}
@@ -331,16 +332,16 @@ We plan to improve the performance of the backend by storing the data in the Myr
 %Even though we defined performance not be our goal in the initial design, other developers have asked us to visualize long running queries.
 
 
-\subsection{Estimate computation/network overhead}
-\label{sec:overhead}
+% \subsection{Estimate computation/network overhead}
+% \label{sec:overhead}
 
-A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
+% A further question is  how can we get insightful information from the logging and visualization. To help us improving query plan rewriting and efficiently allocate resource for a query, we might want to reason about what factor contribute most to the running time of the query plan from the logging/visualization. In a pipelined and asynchronous query execution, communication (via network) and computation are overlapped. There would be no accurate measure of the communication time and computation time for the whole system.  So we would like to ask following questions.
 
-\noindent\textbf{Assume no communication time}.  That is to assume that we can have an underlying network with infinite bandwidth and zero latency. Based on the logging, we want to infer how much the running time could be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster.
+% \noindent\textbf{Assume no communication time}.  That is to assume that we can have an underlying network with infinite bandwidth and zero latency. Based on the logging, we want to infer how much the running time could be improved given this assumption. This would be a measure of how expensive the computation is and could demonstrate the best performance gain we can have if we make the communication faster.
 
-\noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer how much the running time could be improved. This would be a measure of how expensive the communication is.
+% \noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer how much the running time could be improved. This would be a measure of how expensive the communication is.
 
-\noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan, which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
+% \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan, which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
 
 \bibliographystyle{plain}
 \bibliography{references}
