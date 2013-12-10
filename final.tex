@@ -59,7 +59,15 @@
 
 Myria is a distributed big data management system currently being developed in the database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective as understanding system behavior in a distributed database management system requires observing related executions across different workers.
 
-We are building a system to collect information about the query execution and visualize the data in a meaningful way that will allow us to efficiently debug and improve query execution.
+We are building a system to collect information about the query execution and visualize the data in a meaningful way that will allow us to efficiently debug and improve query execution. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=.8\textwidth]{figure1}
+  \end{center}
+  \caption{Visualization of fragment execution and worker utilization with focus on the first two seconds.}
+  \label{fig:fig1}
+\end{figure}
 
 
 \section{Background and goals}
@@ -198,21 +206,38 @@ Logs are collected on the Myria master that offers a REST API to access the aggr
 \subsection{Visualization}
 \label{sec:visualization}
 
-At the moment, we support two views. One shows the state of one query fragment on each worker. The second view shows the states of one query fragment on one worker.
+Users can switch between three levels of query execution visualization to identify the problem at the granularity that best reveals the information they need.
 
-For the first view, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line plot as seen in Figure~\ref{fig:line}. Skew can be identified in a drop in the number of workers calculating a query fragment.
+These kinds of visualization allow developers to answer the questions from Section~\ref{sec:objective}.
+% except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
+
+A more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be given in Section~\ref{sec:evaluation}.
+
+\subsubsection{Query plan level}
+
+The query plan level visualization shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck.
+
+For the first view, we want to show on how many workers the query fragment is running at a certain point in time. To do this, we count the number and show a line plot as seen in Figure~\ref{fig:frags}. Skew can be identified in a drop in the number of workers calculating a query fragment.
 
 \begin{figure}[h]
   \begin{center}
-    \includegraphics[width=1\textwidth]{line.png}
+    \includegraphics[width=\textwidth]{fragments_lines}
   \end{center}
-  \caption{A line chart showing the number of workers on which a query fragment is running on.}
-  \label{fig:line}
+  \caption{Visualization that shows on how many workers a fragment is computing. The last fragment is the one that writes the join results to disk.}
+  \label{fig:frags}
 \end{figure}
 
-We use a Gantt chart to visualize the states and the times an operator or query fragment is in a state in the second view. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand. Figure~\ref{fig:gantt} shows the visualization of operators in a query fragment.
+\subsubsection{Query fragment level}
 
-The Gantt chart is also used to visualize whether a query fragment on a worker is calculating or sleeping in addition to the plot in the first visualization. Instead of showing a hierarchy, only the states computing or sleeping are shown for the root operators of a query fragment on each worker.
+If a critical fragment is identified, a user can switch to the visualization at the query fragment level. This level shows the execution state of the same query fragment on different workers in a Gantt chart. Possible states of a fragment are \emph{computing}, \emph{sleeping}, \emph{sending}, and \emph{receiving}. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them.
+
+Users can finally narrow down to identify which worker to explore next.
+
+\subsubsection{Operator level}
+
+The operator level visualization as seen in Figure~\ref{fig:gantt} shows a Gantt chart of the operator states for a specific query fragment. The operators of the query fragment are shown in the same hierarchy as they appear in the query subtree. For every point in time, the Gantt chart shows the operator states, \emph{computing}, \emph{waiting} (an operator waits for a call to its child to return), \emph{sleeping}, \emph{receiving}, or \emph{sleeping}. This view allows users to see which operator is the bottleneck of the query fragment and how long/how frequent an operator is waiting for data.
+
+For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand.
 
 \begin{figure}[h]
   \begin{center}
@@ -222,13 +247,14 @@ The Gantt chart is also used to visualize whether a query fragment on a worker i
   \label{fig:gantt}
 \end{figure}
 
-These kinds of visualization allow developers to answer the questions from Section~\ref{sec:objective} except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
 
-For the final visualization, we plan to add another view that shows the graph that shows on how many workers a query fragment is running for each query fragment. The three views can be seen as showing different granularities. The overview over all query fragments reveals dependencies and a developer might want to investigate a certain query fragment that seems to block others. For this query fragment the developer can investigate its execution of different workers and potentially find the one that is slowing down the whole execution. Then the developer can evaluate why a particular query fragment on a worker is not working.
+% For the final visualization, we plan to add another view that shows the graph that shows on how many workers a query fragment is running for each query fragment. The three views can be seen as showing different granularities. The overview over all query fragments reveals dependencies and a developer might want to investigate a certain query fragment that seems to block others. For this query fragment the developer can investigate its execution of different workers and potentially find the one that is slowing down the whole execution. Then the developer can evaluate why a particular query fragment on a worker is not working.
 
-A more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be added in the final paper.
+\subsubsection{Implementation}
 
 We use D3\cite{bostock2011d3} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}.
+
+We used the visualization technique of \emph{docs+context}\cite{furnas1986generalized} to allow users to zoom into a detail of the query execution without loosing the context of the whole query.
 
 The data format for the visualizations is a custom JSON\footnote{JavaScript object notation} format with nested operators and an array of states per operator. The line charts use CSV\footnote{Comma separated values}.
 
