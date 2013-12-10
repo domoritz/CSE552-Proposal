@@ -144,7 +144,7 @@ Tools to visualize query plans for example in SQL Server, as used to improve per
 
 \section{Design and implementation}
 
-In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. Section~\ref{sec:collect} explains how logs are collected. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time.
+In Section~\ref{sec:logging} and \ref{sec:collect}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present the collected information to help us as developers to understand the performance impact of skew or certain operators on the running time.
 
 \subsection{Logging}
 \label{sec:logging}
@@ -190,7 +190,7 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 \subsection{Log collection}
 \label{sec:collect}
 
-For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
+For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. We use dedicated logs to enable us to use asynchronous logs and keep the effect on query execution small. Since logs are collected on different workers, we need to collect them on one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
 
 This architecture of distributed loggers and collectors is similar to the collection pipeline proposed in Dapper\cite{sigelman2010dapper}.
 
@@ -298,7 +298,15 @@ In this paper, we explained Myria's execution model and our log collection and l
 
 We plan better integration of the visualization into the web interface and automatically redirect users to the overview visualization when they submit a long running query. The visualization can then be used to help estimating the progress of the query execution.
 
-In addition to a better integration into the user interface, we plan to improve the Gantt chart for operator visualization to better present dependencies and explicitly show nesting. We already have some mock-ups that we created in response to what we saw in our charts but plan to first finish the back end to make it easier to adapt the data format.
+In addition to a better integration into the user interface, we plan to improve the Gantt chart for operator visualization to better present dependencies and explicitly show nesting. Additionally, the fact that not all state changes are possible (see Figure~\ref{fig:states} for a state diagram of possible state changes) allows us to develop a visualization that avoids redundant information. We already have some mock-ups that we created in response to what we saw in our charts but plan to first finish the back end to make it easier to adapt the data format.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=.5\textwidth]{states.pdf}
+  \end{center}
+  \caption{Possible state changes of non-leaf and non-root operators.}
+  \label{fig:states}
+\end{figure}
 
 Another small improvement that we plan to implement is to show how many tuples were sent to the same worker and how many tuples had to be sent to other servers instead of just one number.
 
