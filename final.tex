@@ -208,7 +208,7 @@ A more detailed evaluation of how the visualization helped us to understand, deb
 
 \subsubsection{Query plan level}
 
-The query plan level visualization as seen in Figure~\ref{fig:frags} shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck. Skew can be identified in a drop in the number of workers calculating a query fragment.
+The query plan level visualization as seen in Figure~\ref{fig:frags} shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck. Skew can be identified in a drop in the number of workers calculating a query fragment. Without skew, the graph would go up to the maximum, stay there for most of the computation, and then go back down.
 
 \begin{figure}[h]
   \begin{center}
@@ -253,20 +253,20 @@ The data format for the visualizations is a custom JSON\footnote{JavaScript obje
 
 \section{Evaluation}
 \label{sec:evaluation}
-We use our visualization framework to examine real world database queries. The three-level visualization greatly help us to gain knowledge on the execution of the query plan. We presented the following user cases, which illustrates the interactive exploration of the query execution that an user can do .
+We use our visualization framework to examine real world database queries. The three-level visualization helps us to gain knowledge on the execution of the query plan. We present the following use cases, which illustrates the interactive exploration of the query execution.
 
 \noindent \textbf{Case 1: Identify slow worker(s)}.
-We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail, which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
+We execute a distributed partition join as shown in Figure~\ref{fig:query_plan}. First, we examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment~0 and fragment~1, there is a long tail, which clearly shows that a single worker takes much longer than others to finish these two fragments.
 
 \begin{figure}[h]
   \begin{center}
     \includegraphics[width=\textwidth]{slow_worker_overview.pdf}
   \end{center}
-  \caption{query level visualization}
+  \caption{Query level visualization used to identify a slow worker by observing a long tail.}
   \label{fig:slow_worker_overview}
 \end{figure}
 
-To better understand this problem, we zoomed to the fragment level visualization of fragment 0 (Figure~\ref{fig:slow_worker_fragment}). This figure shows that worker 1 takes much longer to finish then others. Since we have further narrowed down the problem on worker 1. We zoom in further to see the operator level visualization of fragment 0 on worker 1.
+To better understand this problem, we zoom to the fragment level visualization of fragment~0 (Figure~\ref{fig:slow_worker_fragment}). This figure shows that worker~1 takes much longer to finish than the rest of the workers. Since we have further narrowed down the problem on worker~1, we zoom in further to see the operator level visualization of fragment~0 on worker~1.
 
 \begin{figure}[h]
   \begin{center}
@@ -276,7 +276,7 @@ To better understand this problem, we zoomed to the fragment level visualization
   \label{fig:slow_worker_fragment}
 \end{figure}
 
-Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)} takes a long time to scan the first tuple from database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker 1.
+Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)}. It takes a long time to scan the first tuple from the database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker~1.
 
 \begin{figure}[h]
   \begin{center}
@@ -287,16 +287,15 @@ Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see 
 \end{figure}
 
 \noindent \textbf{Case 2: Identify bottleneck operator}.
-A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the similar logic, of Case 1, we can zoom down till operator level to find the bottle neck operator. Figure \ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case 1 without slow worker. We can observe that the \emph{Insert} operator takes the most of time of the query fragment, which implies that this query plan is I/O bounded. Writing the result to the database is the bottleneck of this query.
+A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the process from Case~1, we can zoom down till operator level to find the bottleneck operator. Figure~\ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case~1 without slow worker. We can observe that the \emph{Insert} operator takes most of time when executing the query fragment. This implies that this query plan is I/O bound. Writing the result to the database is the bottleneck of this query.
 
 \begin{figure}[h]
   \begin{center}
 	\includegraphics[width=\textwidth]{bottleneck_operator.pdf}
   \end{center}
- \caption{Operator level visualization used to identify bottle neck.}
+ \caption{Operator level visualization used to identify bottleneck.}
   \label{fig:bottleneck_operator}
  \end{figure}
-
 
 
 \section{Outlook}
