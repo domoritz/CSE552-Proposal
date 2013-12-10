@@ -122,7 +122,7 @@ Our system has to collect information about the execution of a physical query pl
 
 \end{enumerate}
 
-We do not try to build a visualization that can visualize long running queries with many states as we do not expect to get different insights into the general query execution, skew and data flow from queries that run longer.
+We do not try to build a visualization that can visualize long running queries with many states for each query fragment as we do not expect to get different insights into the general query execution, skew and data flow from queries that run longer. However, since we can have many workers and multiple query fragments, which will prevent us from showing all profiling data in one view.
 
 % explain what we want to learn about operators, query fragments and workers
 % talk about shared memory model
@@ -133,16 +133,21 @@ Tools to visualize query plans for example in SQL Server as used to improve perf
 
 Twitter developed Ambrose\cite{ambrose}, a platform for visualization and real-time monitoring of MapReduce data workflows. They offer three different views to show associated jobs, job dependencies and progress. Ambrose has been released as open source. Ambrose, however, is not suitable for our needs as the abstraction level of jobs is too high and does not capture single operators.
 
-Google's Dapper \cite{sigelman2010dapper} is a distributed systems tracing infrastructure offers more fine grained tracing of calls in their distributed system. Twitter closely modelled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin has a similar architecture and offers similar visualizations. However, we offer different abstraction levels which enables users to find problems faster and handle larger amounts of profiling data.
+Google's Dapper\cite{sigelman2010dapper} is a distributed systems tracing infrastructure offers more fine grained tracing of calls in their distributed system. Twitter closely modelled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin has a similar architecture and offers similar visualizations. However, we offer different abstraction levels which enables users to find problems faster and handle larger amounts of profiling data. Also, our visualization is optimized to help developers understand query execution in Myria as opposed to general traces in distributed systems.
 
 \section{Design and implementation}
 
-In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time. In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
+In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. Section~\ref{sec:collect} explains how logs are collected. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time.
+
+
+In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
 
 \subsection{Logging}
 \label{sec:logging}
 
-In our visualization, we want to capture the state of operators, query fragments, and workers. The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change. For each state we want to visualize when the transitions happened.
+In our visualization, we want to capture the state of operators, query fragments, and workers. A state is similar to a span in Dapper\cite{sigelman2010dapper}.
+
+The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change. For each state we want to visualize when the transitions happened.
 
 Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning. Note that sleep and wait are different. Waiting means that an operator is waiting for child operator to return from a function call and sleep means that an operator has to be woken up by new incoming data.
 
@@ -178,7 +183,14 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 
 % state changes
 
+\subsection{Log collection}
+\label{sec:collect}
+
 For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Since logs are collected on different workers, we need to collect them on one machine that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not been implemented storing the data in the database yet and read the logs in each request from the web front end.
+
+This architecture of distributed loggers and collectors is similar to the collection pipeline proposed in Dapper\cite{sigelman2010dapper}.
+
+Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous javascript calls to a server.} from the Myria through the App engine server for myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
 
 % how does the visualization server process the data
 
@@ -200,9 +212,9 @@ For the first view, we want to show on how many workers the query fragment is ru
   \label{fig:line}
 \end{figure}
 
-We use a gantt chart to visualize the states and the times an operator or query fragment is in a state in the second view. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand. Figure~\ref{fig:gantt} shows the visualization of operators in a query fragment.
+We use a Gantt chart to visualize the states and the times an operator or query fragment is in a state in the second view. Gantt charts are used widely in the visualization of project plans because they visualize time spans and show dependencies between them. For the visualization of operators we want to show the hierarchical relationship between operators and allow users to focus only on certain operators. Additional information about states (such as where the data is fetched from, specific parameters of an operator and eventually how much data was returned) will be shown on demand. Figure~\ref{fig:gantt} shows the visualization of operators in a query fragment.
 
-The gantt chart is also used to visualize whether a query fragment on a worker is calculating or sleeping in addition to the plot in the first visualization. Instead of showing a hierarchy, only the states computing or sleeping are shown for the root operators of a query fragment on each worker.
+The Gantt chart is also used to visualize whether a query fragment on a worker is calculating or sleeping in addition to the plot in the first visualization. Instead of showing a hierarchy, only the states computing or sleeping are shown for the root operators of a query fragment on each worker.
 
 \begin{figure}[h]
   \begin{center}
@@ -218,9 +230,34 @@ For the final visualization, we plan to add another view that shows the graph th
 
 A more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be added in the final paper.
 
-We use \emph{d3}\footnote{\url{http://d3js.org}} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}.
+We use D3\cite{bostock2011d3} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}.
 
-%\subsubsection*{Analytics}
+The data format for the visualizations is a custom JSON\footnote{JavaScript object notation} format with nested operators and an array of states per operator. The line charts use CSV\footnote{Comma separated values}.
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+\section{Outlook}
+\label{sec:outlook}
+
+In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution.
+
+
+\subsection{Visualization and integration}
+\label{vizimprovement}
+
+We plan better integration of the visualization into the web interface and automatically redirect users to the overview visualization when they submit a long running queries. The visualization can then be used to help estimating the progress of the query execution.
+
+In addition to a better integration into the user interface, we plan to improve the Gantt chart for operator visualization to better present dependencies and explicitly show nesting. We already have some mock-ups that we created in response to what we saw in our charts but plan to first finish the back end to make it easier to adapt the data format.
+
+Another small improvement that we plan to implement is to show how many tuples were sent to the same worker and how many tuples had to be sent to other servers.
+
+
+\subsection{Performance}
+\label{performance}
+
+We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
+
 \subsection{Estimate computation/network overhead}
 \label{sec:overhead}
 
@@ -231,20 +268,6 @@ A further question is  how can we get insightful information from the logging an
 \noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer how much the running time could be improved. This would be a measure of how expensive the communication is.
 
 \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
-
-\section{Evaluation}
-\label{sec:evaluation}
-
-
-
-\section{Outlook}
-\label{sec:outlook}
-
-% Better user experience,
-% improve visualization of control flow and nesting
-% performance
-% integrate better into query execution
-% show how much data is already local
 
 \bibliographystyle{plain}
 \bibliography{references}
