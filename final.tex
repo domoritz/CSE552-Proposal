@@ -320,13 +320,15 @@ In addition to a better integration into the user interface, we plan to improve 
   \label{fig:states}
 \end{figure}
 
-Another small improvement that we plan to implement is to show how many tuples were sent to the same worker and how many tuples had to be sent to other servers instead of just one number.
+Another small improvement that we plan to implement is to show how many tuples were send to the same worker and how many tuples had to be send to other servers instead of just one number.
 
 
 \subsection{Performance}
 \label{sec:performance}
 
-We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
+We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. This will also simplify the code that analyzes the logs as we can issue queries to the database instead of calculating for example joins manually.
+
+The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
 
 %Even though we defined performance not be our goal in the initial design, other developers have asked us to visualize long running queries.
 
