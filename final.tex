@@ -61,9 +61,11 @@ Myria is a distributed big data management system currently being developed in t
 
 We are building a system to collect information about the query execution and visualize the data in a meaningful way that will allow us to efficiently debug and improve query execution.
 
+
 \section{Background and goals}
 
 This section describes how queries are executed in the Myria system and how our project will help us to understand the execution of physical query plans.
+
 
 \subsection{Background}
 \label{sec:background}
@@ -94,13 +96,11 @@ Each query fragment runs in a separate thread on each worker and is separated fr
   \label{fig:query_plan}
 \end{figure}
 
-
 The Myria database is written in Java and communicates using protocol buffers. The Myria web front end is written in python and runs on App engine.
+
 
 \subsection{Goals}
 \label{sec:objective}
-
-% TODO: goals
 
 Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed database system.
 
@@ -127,6 +127,7 @@ We do not try to build a visualization that can visualize long running queries w
 % explain what we want to learn about operators, query fragments and workers
 % talk about shared memory model
 
+
 \section{Related work}
 
 Tools to visualize query plans for example in SQL Server as used to improve performance for the SDSS Sky survey\cite{szalay2002sdss} focus on optimizing queries and not query execution and have no visualization of data flow which is necessary to optimize physical query execution.
@@ -135,12 +136,13 @@ Twitter developed Ambrose\cite{ambrose}, a platform for visualization and real-t
 
 Google's Dapper\cite{sigelman2010dapper} is a distributed systems tracing infrastructure offers more fine grained tracing of calls in their distributed system. Twitter closely modelled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin has a similar architecture and offers similar visualizations. However, we offer different abstraction levels which enables users to find problems faster and handle larger amounts of profiling data. Also, our visualization is optimized to help developers understand query execution in Myria as opposed to general traces in distributed systems.
 
+
 \section{Design and implementation}
 
 In Section~\ref{sec:logging}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. Section~\ref{sec:collect} explains how logs are collected. In Section~\ref{sec:visualization}, we will focus on how we present this information to help us as developers to understand the performance impact of skew or certain operators on the running time.
 
-
 In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a query execution.
+
 
 \subsection{Logging}
 \label{sec:logging}
@@ -190,15 +192,11 @@ For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http:
 
 This architecture of distributed loggers and collectors is similar to the collection pipeline proposed in Dapper\cite{sigelman2010dapper}.
 
-Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous javascript calls to a server.} from the Myria through the App engine server for myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
+Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous JavaScript calls to a server.} from the Myria through the App engine server for myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
 
-% how does the visualization server process the data
 
 \subsection{Visualization}
 \label{sec:visualization}
-% Web client
-% Form of visualization, e.g. what do we visualize, operator, query fragment, workers. In each kind of visualization, how will the interface looks like.
-% What kind of information a potential user can get from the visualization.
 
 At the moment, we support two views. One shows the state of one query fragment on each worker. The second view shows the states of one query fragment on one worker.
 
@@ -234,17 +232,25 @@ We use D3\cite{bostock2011d3} to build the visualization. D3 is a JavaScript fra
 
 The data format for the visualizations is a custom JSON\footnote{JavaScript object notation} format with nested operators and an array of states per operator. The line charts use CSV\footnote{Comma separated values}.
 
+
 \section{Evaluation}
 \label{sec:evaluation}
 
+TODO: Shumo
+
+% talk about how we use it in demo for sigmod
+
+
 \section{Outlook}
 \label{sec:outlook}
+
+In this paper, we explained Myria's execution model and our log collection and log analysis infrastructure and our visualization. We also evaluated what our current visualization offers to developers. Nonetheless, further improvements of the performance (Section~\ref{sec:performance}) and the visualization (Section~\ref{sec:vizimprovement}) are possible.
 
 In Section~\ref{sec:overhead}, we will explain a method that we use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution.
 
 
 \subsection{Visualization and integration}
-\label{vizimprovement}
+\label{sec:vizimprovement}
 
 We plan better integration of the visualization into the web interface and automatically redirect users to the overview visualization when they submit a long running queries. The visualization can then be used to help estimating the progress of the query execution.
 
@@ -254,9 +260,12 @@ Another small improvement that we plan to implement is to show how many tuples w
 
 
 \subsection{Performance}
-\label{performance}
+\label{sec:performance}
 
 We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
+
+Even though we defined performance not be our goal in the initial design, other developers have asked us to visualize long running queries.
+
 
 \subsection{Estimate computation/network overhead}
 \label{sec:overhead}
