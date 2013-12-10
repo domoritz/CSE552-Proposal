@@ -1,8 +1,3 @@
-% --------------------------------------------------------------
-% This is all preamble stuff that you don't have to worry about.
-% Head down to where it says "Start here"
-% --------------------------------------------------------------
-
 \documentclass[11pt]{scrartcl}
 
 \usepackage{natbib}
@@ -45,10 +40,6 @@
 
 \begin{document}
 
-% --------------------------------------------------------------
-%                         Start here
-% --------------------------------------------------------------
-
 \title{Visualizing Physical Query Execution in a Relational Big Data Management System}
 \subtitle{Project Description \--- Distributed Systems}
 \author{Shumo Chu and Dominik Moritz}
@@ -62,7 +53,7 @@ We developed a visualization system providing user intuitive interfaces for unde
 
 In particular, our visualization system is built on top of Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective, as understanding system behavior in a distributed database management system requires observing related executions across different workers.
 
-Notably, the abstraction layer of Myria which our visualization system interact with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD} shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
+Notably, the abstraction layer of Myria which our visualization system interact with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
 
 \begin{figure}[h]
   \begin{center}
@@ -116,7 +107,7 @@ The Myria database is written in Java and communicates using protocol buffers. T
 
 Database system profiling has been extensively studied over decades. There are two types of works on this topic. One is logging query execution information and analyzing logs afterwards for better query optimization. The other is using real-time profiling information to estimate the progress of a query. We focus on the first type of problem in the context of distributed database system.
 
-Our system has to collect information about the execution of a physical query plan in Myria, which provides the foundation for analyzing the data and creating a meaningful visualization. The visualization will be embedded in a web application. We plan to analyze the query execution and find problems such as data skew.
+Our system has to collect information about the execution of a physical query plan in Myria, which provides the foundation for analyzing the data and creating a meaningful visualization. The visualization is embedded in a web application.
 
 \vspace{5px}
 
@@ -125,12 +116,8 @@ Our system has to collect information about the execution of a physical query pl
 \begin{enumerate}
   \item What are the data dependencies between operators in workers?
   \item What is the bottleneck of the execution? Improving which part could improve the performance the most?
-    %\item How does an optimization rule affect query execution?
-  %\item Is an execution network or CPU bound?
   \item Is there a slow worker during a certain stage of the execution that prevent the progress of the whole query plan?
   \item Is the data skewed in a way that prevents efficient usage of available workers?
-  %\item How does network and computation contribute to the total running time? We make two hypothesis, respectively. If we assume the network has infinite bandwidth and no latency, how would the running time change? If we assume that we have infinite computation power, how would the running time change?
-  %\item How good is the load balancing? If it is skewed, how much does this affect the performance?
 
 \end{enumerate}
 
@@ -181,13 +168,13 @@ send & sending data to consumer over network & - & - \\
 
 In order to capture these states we have to log events that indicate their beginning and their end. An operator can only be in one state at a time. Consequently, the states can be reconstructed from the logs without any information about which events belong to each other. Since we also log the time of the events we can reconstruct when an operator changes its state and determine how long it has been in a certain state. We don't expect clock skew to be a problem because the intervals are coarse grained enough.
 
-No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We will use this information in the visualization of operator states.
+No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We use this information in the visualization of operator states.
 
 To be able to reconstruct the states mentioned in Table~\ref{tbl:state} we have to log all events that cause state changes.
 
 As mentioned in the beginning of this section, the states of query fragments and workers can be inferred from the state of the query fragments that are executed on a worker. A query fragment can be in the state receiving when the leaf operator is a consumer (and not a scan). It can be in the state compute when any of its children are computing. It can be sleeping when the root is sleeping and it can be sending when the root is sending. Since a fragment is executed by one thread, it cannot be in multiple states.
 
-The state of a worker is ambiguous because multiple threads can be executing multiple query fragments that are in different states. We will use the state of the query fragments to show how many query fragments are working but we will not determine a single state for the whole worker.
+The state of a worker is ambiguous because multiple threads can be executing multiple query fragments that are in different states. We use the state of the query fragments to show how many query fragments are working but we do not determine a single state for the whole worker.
 
 % state changes
 
@@ -206,13 +193,11 @@ Logs are collected on the Myria master that offers a REST API to access the aggr
 
 Users can switch between three levels of query execution visualization to identify the problem at the granularity that best reveals the information they need. These kinds of visualization allow developers to answer the questions from Section~\ref{sec:objective}.
 
-% except for the last one. We will describe how we answer this question in Section~\ref{sec:overhead}.
-
 A more detailed evaluation of how the visualization helped us to understand, debug and eventually improve how queries are executed will be given in Section~\ref{sec:evaluation}.
 
 \subsubsection{Query plan level}
 
-The query plan level visualization as seen in Figure~\ref{fig:frags} shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck. Skew can be identified in a drop in the number of workers calculating a query fragment.
+The query plan level visualization as seen in Figure~\ref{fig:frags} shows a line chart of utilization of the cluster for each query fragment. Utilization is measured as the fraction of workers that are executing the query fragment. By observing long tails users can identify which of the query fragments is a bottleneck. Skew can be identified in a drop in the number of workers calculating a query fragment. Without skew, the graph would go up to the maximum, stay there for most of the computation, and then go back down.
 
 \begin{figure}[h]
   \begin{center}
@@ -244,8 +229,6 @@ For the visualization of operators we want to show the hierarchical relationship
 \end{figure}
 
 
-% For the final visualization, we plan to add another view that shows the graph that shows on how many workers a query fragment is running for each query fragment. The three views can be seen as showing different granularities. The overview over all query fragments reveals dependencies and a developer might want to investigate a certain query fragment that seems to block others. For this query fragment the developer can investigate its execution of different workers and potentially find the one that is slowing down the whole execution. Then the developer can evaluate why a particular query fragment on a worker is not working.
-
 \subsubsection{Implementation}
 
 We use D3\cite{bostock2011d3} to build the visualization. D3 is a JavaScript framework for data visualizations on the web. Consequently, our visualization will be browser based and we integrated it into the existing web interface for Myria\footnote{A demo can be found at \url{http://myria-web.appspot.com} but it does not yet have the visualization.}.
@@ -257,20 +240,20 @@ The data format for the visualizations is a custom JSON\footnote{JavaScript obje
 
 \section{Evaluation}
 \label{sec:evaluation}
-We use our visualization framework to examine real world database queries. The three-level visualization greatly help us to gain knowledge on the execution of the query plan. We presented the following user cases, which illustrates the interactive exploration of the query execution that an user can do .
+We use our visualization framework to examine real world database queries. The three-level visualization helps us to gain knowledge on the execution of the query plan. We present the following use cases, which illustrates the interactive exploration of the query execution.
 
 \noindent \textbf{Case 1: Identify slow worker(s)}.
-We execute a distributed partition join as showed in Figure \ref{fig:query_plan}. We firstly examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment 0 and fragment 1, there is a long tail, which clearly shows that a single worker takes much longer time than others to finish these two fragments.  
+We execute a distributed partition join as shown in Figure~\ref{fig:query_plan}. First, we examine the query level visualization (Figure~\ref{fig:slow_worker_overview}) of the query plan execution. We can observe that in the utilization line chart of fragment~0 and fragment~1, there is a long tail, which clearly shows that a single worker takes much longer than others to finish these two fragments.
 
 \begin{figure}[h]
   \begin{center}
     \includegraphics[width=\textwidth]{slow_worker_overview.pdf}
   \end{center}
-  \caption{query level visualization}
+  \caption{Query level visualization used to identify a slow worker by observing a long tail.}
   \label{fig:slow_worker_overview}
 \end{figure}
 
-To better understand this problem, we zoomed to the fragment level visualization of fragment 0 (Figure~\ref{fig:slow_worker_fragment}). This figure shows that worker 1 takes much longer to finish then others. Since we have further narrowed down the problem on worker 1. We zoom in further to see the operator level visualization of fragment 0 on worker 1.
+To better understand this problem, we zoom to the fragment level visualization of fragment~0 (Figure~\ref{fig:slow_worker_fragment}). This figure shows that worker~1 takes much longer to finish than the rest of the workers. Since we have further narrowed down the problem on worker~1, we zoom in further to see the operator level visualization of fragment~0 on worker~1.
 
 \begin{figure}[h]
   \begin{center}
@@ -280,7 +263,7 @@ To better understand this problem, we zoomed to the fragment level visualization
   \label{fig:slow_worker_fragment}
 \end{figure}
 
-Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)} takes a long time to scan the first tuple from database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker 1.
+Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see the problem is the operator \emph{Scan(R)}. It takes a long time to scan the first tuple from the database and return it to the \emph{Shuffle(R)} operator. This is possibly caused by the \emph{cold start} of the database connection on worker~1.
 
 \begin{figure}[h]
   \begin{center}
@@ -291,23 +274,21 @@ Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see 
 \end{figure}
 
 \noindent \textbf{Case 2: Identify bottleneck operator}.
-A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the similar logic, of Case 1, we can zoom down till operator level to find the bottle neck operator. Figure \ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case 1 without slow worker. We can observe that the \emph{Insert} operator takes the most of time of the query fragment, which implies that this query plan is I/O bounded. Writing the result to the database is the bottleneck of this query.
+A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the process from Case~1, we can zoom down till operator level to find the bottleneck operator. Figure~\ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case~1 without slow worker. We can observe that the \emph{Insert} operator takes most of time when executing the query fragment. This implies that this query plan is I/O bound. Writing the result to the database is the bottleneck of this query.
 
 \begin{figure}[h]
   \begin{center}
 	\includegraphics[width=\textwidth]{bottleneck_operator.pdf}
   \end{center}
- \caption{Operator level visualization used to identify bottle neck.}
+ \caption{Operator level visualization used to identify bottleneck.}
   \label{fig:bottleneck_operator}
  \end{figure}
-
 
 
 \section{Outlook}
 \label{sec:outlook}
 
 In this paper, we explained Myria's execution model and our log collection and log analysis infrastructure and our visualization. We also evaluated what our current visualization offers to developers. Nonetheless, further improvements of the performance (Section~\ref{sec:performance}) and the visualization (Section~\ref{sec:vizimprovement}) are possible.
-%In Section~\ref{sec:overhead}, we will explain a method that we  plan to use to determine the communication and computation time of a method that we use to determine the communication and computation time of a query execution.
 
 
 \subsection{Visualization and integration}
@@ -325,15 +306,15 @@ In addition to a better integration into the user interface, we plan to improve 
   \label{fig:states}
 \end{figure}
 
-Another small improvement that we plan to implement is to show how many tuples were sent to the same worker and how many tuples had to be sent to other servers instead of just one number.
+Another small improvement that we plan to implement is to show how many tuples were send to the same worker and how many tuples had to be send to other servers instead of just one number.
 
 
 \subsection{Performance}
 \label{sec:performance}
 
-We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
+We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. This will also simplify the code that analyzes the logs as we can issue queries to the database instead of calculating for example joins manually.
 
-%Even though we defined performance not be our goal in the initial design, other developers have asked us to visualize long running queries.
+The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
 
 % \subsection{Estimate computation/network overhead}
 % \label{sec:overhead}
@@ -345,6 +326,7 @@ We plan to improve the performance of the backend by storing the data in the Myr
 % \noindent\textbf{Assume no computation time}.  That is to assume that we can have infinitely fast computation hardware. Given this assumption, we want to infer how much the running time could be improved. This would be a measure of how expensive the communication is.
 
 % \noindent\textbf{Proposed solution}.  Based on the logging information, we can build a temporal state transition graph of the query execution. This graph will consist of the temporal state information of each query fragment in each worker. Combined with the query plan, which contains the dependency between different operators, we want to develop algorithms to infer the running time given different assumptions.
+
 
 \bibliographystyle{plain}
 \bibliography{references}
