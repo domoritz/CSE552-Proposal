@@ -216,9 +216,9 @@ The Gantt chart is also used to visualize whether a query fragment on a worker i
 
 \begin{figure}[h]
   \begin{center}
-    \includegraphics[width=0.9\textwidth]{realgantt}
+    \includegraphics[width=\textwidth]{join_gantt}
   \end{center}
-  \caption{Example gantt chart for a simple query fragment. Red is computing, blue is waiting and gray is sleeping. The small graph under the main graph allows users to select an area to focus on.}
+  \caption{Query fragment of hash join that first consumes all tuples from S and then joins with R. Orange is computing, light orange is waiting and gray is sleeping. The small graph under the main graph allows users to select an area to focus on.}
   \label{fig:gantt}
 \end{figure}
 
