@@ -3,17 +3,21 @@
 \setbeamertemplate{navigation symbols}{}
 
 \usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usefonttheme{professionalfonts}
 
 \definecolor{purple}{RGB}{57,39,91}
 \definecolor{lightpurple}{RGB}{223,221,232}
 \definecolor{LightGray}{rgb}{0.90,0.90,0.90}
 
-\setbeamercolor{title}{fg=purple}
-\setbeamercolor{titlelike}{fg=purple}
+\setbeamercolor{title}{bg=purple, fg=white}
+\setbeamercolor{titlelike}{bg=purple, fg=white}
 \setbeamercolor{background canvas}{bg=white}
 \setbeamercolor{item projected}{fg=purple}
 \setbeamercolor{item}{fg=purple}
 \setbeamercolor{caption name}{fg=purple}
+
 
 % Explainframes:
 \usepackage{ifthen}
@@ -47,6 +51,7 @@
 \title[Query Visualization] % (optional, only for long titles)
 {Visualizing Physical Query Execution in a Relational Big Data Management System}
 \subtitle{}
+%\institute{CSE @ UW}
 \author[Chu, moritz] % (optional, for multiple authors)
 {Shumo Chu, Dominik Moritz}
 
