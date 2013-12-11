@@ -33,8 +33,19 @@
 \excludecomment{explainframe}
 }
 
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.7\paperwidth,ht=2.25ex,dp=1ex,center]{}%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,right]{slide number}%
+      \insertframenumber{}\ifthenelse{\boolean{isexplainframe}}{E}{} / \inserttotalframenumber\hspace*{2ex}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
 \title[Query Visualization] % (optional, only for long titles)
-{Visualizing Physical Query Execution in a Relational Distributed Big Data Management System}
+{Visualizing Physical Query Execution in a Relational Big Data Management System}
 \subtitle{}
 \author[Chu, moritz] % (optional, for multiple authors)
 {Shumo Chu, Dominik Moritz}
@@ -48,19 +59,20 @@
 
 \begin{frame}
 \frametitle{Objective}
-\begin{enumerate}
+\begin{itemize}
 	\item 
-\end{enumerate}
+\end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{The Myria System}
-\begin{enumerate}
+\begin{itemize}
 	\item Big Data management system developed in db group
 	\item Pipelined, parallel, distributed dataflow evaluation system
 	\item \textbf{Fragments}: trees of operators that are each executed on one thread in each worker
 	\item Fragment leaves and roots are typically I/O operators
-\end{enumerate}
+  \item Push\--based between fragments, pull\--based inside fragments
+\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -74,10 +86,67 @@
 \end{figure}
 \end{frame}
 
-\begin{frame}
-\frametitle{System overview}
-Image that shows how we fetch logs and where app engine is.
+\begin{frame}{Physical query plan}
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=.7\textwidth]{join}
+   \end{center}
+  \caption{Query plan of distributed hash join using three query fragments.}
+\end{figure}
 \end{frame}
+
+\begin{frame}
+\frametitle{Visualization}
+\begin{itemize}
+  \item Three granularities
+\end{itemize}
+\begin{enumerate}
+  \item Query level
+  \begin{itemize}
+    \item Shows utilization of workers
+    \item Long tails indicate slow fragment
+  \end{itemize}
+  \item Fragment level
+  \begin{itemize}
+    \item Identify slow worker
+    \item Utilization
+    \item States of root operator on all worker over time
+  \end{itemize}
+  \item Operator level
+  \begin{itemize}
+    \item Identify low\--level problems
+    \item Hierarchy of operators
+    \item States per operator
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{explainframe}{Query plan level visualization}
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=\textwidth]{queryplanviz.png}
+   \end{center}
+  \caption{The \emph{query plan} visualization shows a line chart of cluster utilization for each fragment, measured as the fraction of workers executing it. In this view, a long tail identifies a query bottleneck.}
+\end{figure}
+\end{explainframe}
+
+\begin{explainframe}{Query fragment level visualization}
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=\textwidth]{fragmentviz}
+   \end{center}
+  \caption{ By tracking the thread state across workers---\emph{computing}, \emph{sleeping}, \emph{sending}, or \emph{receiving}---users can identify performance anomalies and workload skew.}
+\end{figure}
+\end{explainframe}
+
+\begin{explainframe}{Operator level visualization}
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=\textwidth]{operatorviz}
+   \end{center}
+  \caption{The \emph{operator level} visualization shows a Gantt chart of operator states for a specific query fragment on a specific worker. The operators are shown in the same hierarchy as they appear in the query subtree. The fine-grained thread states are shown over time. This view allows users to identify or explain low-level implementation problems.}
+\end{figure}
+\end{explainframe}
 
 \begin{frame}
 \frametitle{Visualization: System Architecture}
@@ -90,23 +159,8 @@ Image that shows how we fetch logs and where app engine is.
 \end{figure}
 \end{frame}
 
-\begin{explainframe}{Query plan level visualization}
-\end{explainframe}
-
-\begin{explainframe}{Query fragment level visualization}
-\end{explainframe}
-
-\begin{explainframe}{Operator level visualization}
-\end{explainframe}
-
 \begin{frame}
 \frametitle{Demo}
-\begin{figure}
- \begin{center}
-     \includegraphics[width=\textwidth]{figure1}
-   \end{center}
-  \caption{Query fragment level visualization.}
-\end{figure}
 \end{frame}
 
 \end{document}
