@@ -1,4 +1,4 @@
-\documentclass[mathserif,serif,handout]{beamer}
+\documentclass[mathserif,serif]{beamer}
 
 \setbeamertemplate{navigation symbols}{}
 
@@ -120,17 +120,27 @@
 \end{frame}
 
 \begin{frame}{Physical query plan}
-\begin{itemize}
-   \item \textbf{Fragment}: tree of operators that is executed on one thread in each worker
-  	\item Fragment leaves and roots are typically I/O operators
-    \item Push\--based between fragments, pull\--based inside fragments
-  \end{itemize}
-
   \begin{figure}
    \begin{center}
        \includegraphics[width=.6\textwidth]{join}
      \end{center}
     \caption{Query plan of distributed hash join, three query fragments.}
+  \end{figure}
+  \begin{itemize}
+   \item \textbf{Fragment}: tree of operators that is executed on one thread in each worker
+  	\item Fragment leaves and roots are typically I/O operators
+    \item Push\--based between fragments, pull\--based inside fragments
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Visualization: System Architecture}
+  \begin{figure}
+  	 \begin{center}
+       \includegraphics[width=0.9\textwidth]{viz_arch.pdf}
+     \end{center}
+     \caption{Visualization System Architecture.}
+    \label{fig:viz_arc}
   \end{figure}
 \end{frame}
 
@@ -186,17 +196,6 @@
     \caption{The \emph{operator level} visualization shows a Gantt chart of operator states for a specific query fragment on a specific worker. The operators are shown in the same hierarchy as they appear in the query subtree. The fine-grained thread states are shown over time. This view allows users to identify or explain low-level implementation problems.}
   \end{figure}
 \end{explainframe}
-
-\begin{frame}
-  \frametitle{Visualization: System Architecture}
-  \begin{figure}
-  	 \begin{center}
-       \includegraphics[width=0.9\textwidth]{viz_arch.pdf}
-     \end{center}
-     \caption{Visualization System Architecture.}
-    \label{fig:viz_arc}
-  \end{figure}
-\end{frame}
 
 \begin{frame}
   \frametitle{Demo}
