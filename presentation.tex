@@ -1,6 +1,37 @@
-\documentclass[xetex,mathserif,serif]{beamer}
+\documentclass[mathserif,serif,handout]{beamer}
 
 \setbeamertemplate{navigation symbols}{}
+
+\usepackage{xcolor}
+
+\definecolor{purple}{RGB}{57,39,91}
+\definecolor{lightpurple}{RGB}{223,221,232}
+\definecolor{LightGray}{rgb}{0.90,0.90,0.90}
+
+\setbeamercolor{title}{fg=purple}
+\setbeamercolor{titlelike}{fg=purple}
+\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{item projected}{fg=purple}
+\setbeamercolor{item}{fg=purple}
+\setbeamercolor{caption name}{fg=purple}
+
+% Explainframes:
+\usepackage{ifthen}
+\newboolean{isexplainframe}
+\setboolean{isexplainframe}{false}
+\mode<handout>{
+\newenvironment{explainframe}[1]{
+\setboolean{isexplainframe}{true}
+\addtocounter{framenumber}{-1}
+\setbeamertemplate{background}[grid][step=5mm,color=LightGray]
+\begin{frame}{Handout only: #1}%
+}{%
+\end{frame}%
+\setboolean{isexplainframe}{false}
+}}
+\mode<beamer>{
+\excludecomment{explainframe}
+}
 
 \title[Query Visualization] % (optional, only for long titles)
 {Visualizing Physical Query Execution in a Relational Distributed Big Data Management System}
@@ -54,6 +85,15 @@ Image that shows how we fetch logs and where app engine is.
 	\item Foo
 \end{enumerate}
 \end{frame}
+
+\begin{explainframe}{Query plan level visualization}
+\end{explainframe}
+
+\begin{explainframe}{Query fragment level visualization}
+\end{explainframe}
+
+\begin{explainframe}{Operator level visualization}
+\end{explainframe}
 
 \begin{frame}
 \frametitle{Demo}
