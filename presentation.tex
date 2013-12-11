@@ -74,11 +74,11 @@
 \begin{frame}
   \frametitle{The Myria System}
   \begin{itemize}
-  	\item Big Data management system developed in db group
+  	\item Big Data management as a Service developed in DB group
   	\item Pipelined, parallel, distributed dataflow evaluation system
-  	\item \textbf{Fragments}: trees of operators that are each executed on one thread in each worker
-  	\item Fragment leaves and roots are typically I/O operators
-    \item Push\--based between fragments, pull\--based inside fragments
+	\item Myria translates high level  language (MyriaL, SQL, Datalog) 
+	to physical plan for execution
+	\item Computational model: Relational Algebra + Recursion
   \end{itemize}
 \end{frame}
 
@@ -94,9 +94,17 @@
 \end{frame}
 
 \begin{frame}{Physical query plan}
+\begin{itemize}
+   \item \textbf{Fragments}: trees of operators that are each executed on one thread in each worker
+  	\begin{itemize}
+	\item Fragment leaves and roots are typically I/O operators
+    \item Push\--based between fragments, pull\--based inside fragments
+    \end{itemize}
+  \end{itemize}
+
   \begin{figure}
    \begin{center}
-       \includegraphics[width=.7\textwidth]{join}
+       \includegraphics[width=.6\textwidth]{join}
      \end{center}
     \caption{Query plan of distributed hash join using three query fragments.}
   \end{figure}
