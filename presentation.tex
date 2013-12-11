@@ -2,10 +2,33 @@
 
 \setbeamertemplate{navigation symbols}{}
 
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{wrapfig}
+\usepackage{listings}
+\usepackage{comment}
+
+\fboxsep=1pt%padding thickness
+\fboxrule=1pt%border thickness
+\usepackage{fancybox}
+
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{url}
 \usepackage{xcolor}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usefonttheme{professionalfonts}
+
+
+\hypersetup{
+  linkcolor=DarkSkyBlue,
+  citecolor= DarkSkyBlue,
+  filecolor= DarkSkyBlue,
+  urlcolor= DarkSkyBlue
+}
 
 \definecolor{purple}{RGB}{57,39,91}
 \definecolor{lightpurple}{RGB}{223,221,232}
@@ -33,10 +56,8 @@
   \setboolean{isexplainframe}{false}
   }
 }
-
 \mode<beamer>{
-  \newenvironment{explainframe}[1]{
-  }
+  \excludecomment{explainframe}
 }
 
 \setbeamertemplate{footline}{%
