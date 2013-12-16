@@ -48,7 +48,7 @@
 \maketitle
 
 \section{Introduction}
-We developed a visualization system providing user intuitive interfaces for understand and explore query execution in distributed database system. Our system collects profiling logs of query execution in distributed then aggregate and then shows query processing at three granularities to enable inspection at the resolution that best reflects problems or insights. This would allow users and developers to efficiently debug and improve query processing. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
+We developed a visualization system providing user intuitive interfaces for understanding and exploration of query execution in distributed database system. Our system collects profiling logs of query execution in distributed workers then aggregates and then shows query processing at three granularities to enable inspection at the resolution that best reflects problems or insights. This would allow users to be able to efficiently debug and improve queries, and could also allow developers to improve query processing. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
 
 \begin{figure}[H]
   \begin{center}
@@ -58,36 +58,36 @@ We developed a visualization system providing user intuitive interfaces for unde
   \label{fig:fig1}
 \end{figure}
 
-In particular, our visualization system is built on top of Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications. Myria can run queries from languages that are equivalent to relational algebra with recursion. Queries are translated to physical query execution plans and then executed in the system. At the moment, the only measure for query execution is the overall running time. This limitation led to extended debugging sessions where we tried to understand why certain queries run for a long time. This process was often not very successful and is clearly not effective, as understanding system behavior in a distributed database management system requires observing related executions across different workers.
+In particular, our visualization system is built on top of Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications.  Myria takes queries in high level query language and them translate them into physical query plan, which will be executed in parallel. After the submitting a query, the two only things that an user can possibly get are the query result and the running time. In practice an user would like to ask questions like why this query is slow, why the result of this query is so few, etc. These questions are challenging and difficult for Myria  other current big data system to answer.  However, with our visualization system, Myria users can interactively explore the visualization of query processing to find the answers to their questions.
 
-Notably, the abstraction layer of Myria which our visualization system interact with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
+Notably, the abstraction level of Myria that our visualization system interact with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
 
 
-\section{Background and goals}
+\section{Background and motivation}
 
 This section describes how queries are executed in the Myria system and how our project helps us to understand the execution of physical query plans.
 
 
-\subsection{Background}
+\subsection{Query processing in Myria}
 \label{sec:background}
 
-The Myria database system needs to transform user's high-level queries, eg. SQL, Datalog, or MyriaL\footnote{MyriaL is a PigLatin like, declarative language} into a physical query plan. The physical query plan is the actual execution map. Usually it can be viewed as a \emph{Directed acyclic graph} (DAG), which consists of basic operators, such as \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} and relational tables. In distributed database systems, the introduction of the \emph{SHUFFLE} operator and data partitioning makes query plans more complicated. The introduction of iteration and recursion mean that the query plan is a DAG and not a tree.
+Myria transforms user's query in the languages that it supports, eg. SQL, Datalog, or MyriaL\footnote{MyriaL is a PigLatin like language} into a physical query plan. Physical query plan can be think of the "execution map" of a query. Usually it can be represented as a \emph{Directed acyclic graph} (DAG), which consists of basic operators, e.g. \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} as vertices and the data flows between different operators as edges. Besides the operators that usually exist in sequential relational database system, Myria also has a \emph{SHUFFLE} operator to route the tuples in a sharded table to workers according the user specified column(s) to be hashed. 
 
 \begin{figure}
  \begin{center}
-     \includegraphics[width=0.7\textwidth]{arch}
+     \includegraphics[width=0.7\textwidth]{myria_arch.pdf}
    \end{center}
   \caption{Myria System Architecture.}
   \label{fig:myria_arc}
 \end{figure}
 
-Figure~\ref{fig:myria_arc} shows the overall system architecture consisting of the front-end and the Myria database consisting of the master and the distributed execution engine. The center component in Figure~\ref{fig:myria_arc} is the master. It hosts the REST interface used by the web UI and other tools, maintains metadata about the system resources and datasets in the cluster (e.g., used by the query optimizer in the web UI), and it mediates access to the cluster itself. Database queries are translated from a declarative language to the physical query plan.
+Figure~\ref{fig:myria_arc} shows the system architecture of Myria. It contains three parts, a front end consisting web UI and query optimizer, a master consisting REST API server and coordinator and distributed query execution engine called MyriaX.  
 
-The bottom part shows the architecture of Myria’s query execution engine, MyriaX. MyriaX is a pipelined, parallel, distributed dataflow evaluation system that takes a (possibly cyclic) graph of operators (query plan) and executes it efficiently on a shared-nothing cluster. This pipeline is divided into query fragments, which are chains of operators that can operate on a single compute node in a single thread. The data is pre-partitioned and stored in the workers.
+When a query is submitted by user, the front end translates this query into physical query plan using its query optimizer. Then it submits the physical query plan to master through REST server. The coordinator gets the physical plan from REST sever and begin to call MyriaX to execute the physical plan.
 
-A query plan is the actual execution map for the distributed database system.  Each query plan consists of basic operators forming an execution flow. For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
+For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
 
-Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull-based within one fragment and push-based between fragments. This means that within one query fragment an operator calls its children to fetch data (texttt{fetchNextReady}). A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. The query fragments form a DAG. inside one query fragment, the operators form a tree. Fragment leaves and roots are typically I/O operators. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments.
+Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull-based within one fragment and push-based between fragments. This means that within one query fragment an operator calls its children to fetch data (\texttt{fetchNextReady}). A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. The query fragments form a DAG. inside one query fragment, the operators form a tree. Fragment leaves and roots are typically I/O operators. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments.
 
 \begin{figure}
  \begin{center}
@@ -119,19 +119,30 @@ Our system has to collect information about the execution of a physical query pl
 
 \end{enumerate}
 
-We do not try to build a visualization that can visualize long running queries with many states for each query fragment as we do not expect to get different insights into the general query execution, skew and data flow from queries that run longer. Performance is, for now, not a main goal of the project. However, since we can have many workers and multiple query fragments, which will prevent us from showing all profiling data in one view.
+%We do not try to build a visualization that can visualize long running queries with many states for each query fragment as we do not expect to get different insights into the general query execution, skew and data flow from queries that run longer. Performance is, for now, not a main goal of the project. However, since we can have many workers and multiple query fragments, which will prevent us from showing all profiling data in one view.
 
 
 \section{Related work}
 
 Twitter developed Ambrose\cite{ambrose}, a platform for visualization and real-time monitoring of MapReduce data workflows. They offer three different views to show associated jobs, job dependencies and progress. Ambrose has been released as open source. Ambrose, however, is not suitable for our needs as the abstraction level of jobs is too high and does not capture single operators.
 
-Google's Dapper\cite{sigelman2010dapper} is a distributed systems tracing infrastructure and offers fine grained tracing of calls in Google's distributed systems. They also proposed an interface for visualizing traces. Twitter closely modeled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin as it has a similar architecture and offers similar visualizations. However, we offer different abstraction levels, which enables users to find problems faster and handle larger amounts of profiling data. Also, our visualization is optimized to help developers understand query execution in Myria as opposed to general traces in distributed systems.
+Google's Dapper\cite{sigelman2010dapper} is a distributed systems tracing infrastructure and offers fine grained tracing of calls in Google's distributed systems. They also proposed an interface for visualizing traces. Twitter closely modeled Zipkin\cite{zipkin} after Dapper and released it as open source. Our system is similar to Dapper and Zipkin as it has a similar architecture and offers similar visualizations. However, we offer different abstraction levels, which enables users to find problems faster and handle larger amounts of profiling data. Also, our visualization is specifically designed to help developers understand query execution in distributed database system like Myria as opposed to general traces in distributed systems.
 
 Tools to visualize query plans for example in SQL Server, as used to improve performance for the SDSS Sky survey\cite{szalay2002sdss}, focus on optimizing queries and not query execution and have no visualization of data flow, which is necessary to optimize physical query execution.
 
 
 \section{Design and implementation}
+
+\subsection{System Design}
+Figure~\ref{fig:vis_arch} shows the architecture of our visualization system. We log relevant events in each worker. After the execution of a query, logs stored in workers are collected by the log coordinator on the maser node and then aggregated and  stored to the log database. When there is a request of visualization data from the web UI, the visualization REST server will extract the specific data requested from the log DB and transform it to the JSON format and send it to web UI.  The aim of this design is to have the minimal affect on the query performance yet make the visualization system highly modular for future improvement. For example, using the REST api, anyone can implement their own visualization front end to meet special need.
+
+\begin{figure}
+ \begin{center}
+     \includegraphics[width=0.7\textwidth]{viz_arch.pdf}
+   \end{center}
+  \caption{Architecture of the visualization system}
+  \label{fig:vis_arch}
+\end{figure}
 
 In Section~\ref{sec:logging} and \ref{sec:collect}, we will describe how we collect performance data using logging and what the logs tell us about the query execution. In Section~\ref{sec:visualization}, we will focus on how we present the collected information to help us as developers to understand the performance impact of skew or certain operators on the running time.
 
@@ -179,14 +190,14 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 \subsection{Log collection}
 \label{sec:collect}
 
-For logging, we use standard Java logging using \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. We use dedicated logs to enable us to use asynchronous logs and keep the effect on query execution small. Since logs are collected on different workers, we need to collect them on one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
+For logging, we use \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. We use dedicated logs to enable us to use asynchronous logs and keep the effect on query execution small. Since logs are collected on different workers, we need to collect them on one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
 
 This architecture of distributed loggers and collectors is similar to the collection pipeline proposed in Dapper\cite{sigelman2010dapper}.
 
 Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous JavaScript calls to a server.} from the Myria through the App Engine server for Myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
 
 
-\subsection{Visualization}
+\subsection{Visualization interface}
 \label{sec:visualization}
 
 Users can switch between three levels of query execution visualization to identify the problem at the granularity that best reveals the information they need. These kinds of visualization allow developers to answer the questions from Section~\ref{sec:objective}.

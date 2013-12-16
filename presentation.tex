@@ -1,4 +1,4 @@
-\documentclass[mathserif,serif]{beamer}
+\documentclass[mathserif,serif,handout]{beamer}
 
 \setbeamertemplate{navigation symbols}{}
 
@@ -126,6 +126,7 @@
      \end{center}
     \caption{Distributed hash join, \texttt{Q(a,b) :- R(a,x), S(b,x)}}
   \end{figure}
+  \vspace{-5mm}
   \begin{itemize}
    \item \textbf{Fragment}: tree of operators that is executed on one thread in each worker
   	\item Fragment leaves and roots are typically I/O operators
@@ -201,16 +202,16 @@
   \frametitle{Demo}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Conclusion}
-  \begin{itemize}
-    \item Visualization helps...
-    \begin{itemize}
-      \item identify problems
-      \item understand execution
-      \item reduce skew and improve flow
-    \end{itemize}
-  \end{itemize}
-\end{frame}
+%\begin{frame}
+%  \frametitle{Conclusion}
+%  \begin{itemize}
+%    \item Visualization helps...
+%    \begin{itemize}
+%      \item identify problems
+%      \item understand execution
+%      \item reduce skew and improve flow
+%    \end{itemize}
+%  \end{itemize}
+%\end{frame}
 
 \end{document}
