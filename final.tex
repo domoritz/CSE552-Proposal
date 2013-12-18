@@ -48,7 +48,7 @@
 \maketitle
 
 \section{Introduction}
-We developed a visualization system providing user intuitive interfaces for understanding and exploration of query execution in distributed database system. Our system collects profiling logs of query execution in distributed workers then aggregates and then shows query processing at three granularities to enable inspection at the resolution that best reflects problems or insights. This would allow users to be able to efficiently debug and improve queries, and could also allow developers to improve query processing. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
+We developed a visualization system that gives its users an intuitive interface for understanding and exploring query execution in distributed database system. Our system collects profiling logs of query execution in distributed workers, aggregates, and then shows query processing at three granularities to enable inspection at the resolution that best reflects problems or insights. This allows users to efficiently debug and improve queries. It also allows developers to improve query processing. An example of our visualization can be seen in Figure~\ref{fig:fig1}.
 
 \begin{figure}[H]
   \begin{center}
@@ -58,9 +58,9 @@ We developed a visualization system providing user intuitive interfaces for unde
   \label{fig:fig1}
 \end{figure}
 
-In particular, our visualization system is built on top of Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications.  Myria takes queries in high level query language and then translate then into physical query plan, which will be executed in parallel. After the submitting a query, the two only things that an user can possibly get are the query result and the running time. In practice an user would like to ask questions like why this query is slow, why the result of this query is so few, etc. These questions are challenging and difficult for Myria  other current big data system to answer.  However, with our visualization system, Myria users can interactively explore the visualization of query processing to find the answers to their questions.
+In particular, our visualization system is built to inspect query execution in Myria, a distributed big data management system currently being developed in the UW CSE database group. Myria aims towards building a distributed database platform to provide \emph{big data management and analytics as a service} primarily for scientific applications.  Myria takes queries in high level query languages and then translates them into physical query plans, which will be executed in parallel. After submitting a query, the a user can only get the query result and the running time. In practice an user would like to ask questions like why this query is slow, why the result of this query is so large/small, etc. These questions are challenging and difficult for Myria and other current big data systems to answer. With our visualization system, Myria users can interactively explore the visualization of query processing to find the answers to these questions.
 
-Notably, the abstraction level of Myria that our visualization system interacts with is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, shared the similar design of this layer. Thus, our visualization approach is general to relational big data systems.
+Notably, the abstraction level of Myria that our visualization system interacts with, is the physical plan layer. Most current distributed database systems supporting structured or semi-structured data model, like Pig, Hive and Shark \cite{pig, hive, XinRZFSS13SIGMOD}, share a similar design for this layer. Thus, our visualization approach is general to relational big data systems.
 
 
 \section{Background and motivation}
@@ -71,7 +71,7 @@ This section describes how queries are executed in the Myria system and how our 
 \subsection{Query processing in Myria}
 \label{sec:background}
 
-Myria transforms user's query in the languages that it supports, eg. SQL, Datalog, or MyriaL\footnote{MyriaL is a PigLatin like language} into a physical query plan. Physical query plan can be think of the "execution map" of a query. Usually it can be represented as a \emph{Directed acyclic graph} (DAG), which consists of basic operators, e.g. \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} as vertices and the data flows between different operators as edges. Besides the operators that usually exist in sequential relational database system, Myria also has a \emph{SHUFFLE} operator to route the tuples in a sharded table to workers according the user specified column(s) to be hashed. 
+Myria transforms user's query in the languages that it supports, eg. SQL, Datalog, or MyriaL\footnote{MyriaL is a PigLatin like language} into a physical query plan. Physical query plan can be thought of as the "execution map" of a query. Usually it can be represented as a \emph{Directed acyclic graph} (DAG), which consists of basic operators, e.g. \emph{JOIN}, \emph{GROUP BY}, \emph{SCAN}, \emph{APPLY} as vertices and the data flows between different operators as edges. Besides the operators that usually exist in sequential relational database systems, Myria also has a \emph{SHUFFLE} operator to route the tuples in a sharded table to workers according to the hashes of specified column(s).
 
 \begin{figure}
  \begin{center}
@@ -81,11 +81,11 @@ Myria transforms user's query in the languages that it supports, eg. SQL, Datalo
   \label{fig:myria_arc}
 \end{figure}
 
-Figure~\ref{fig:myria_arc} shows the system architecture of Myria. It contains three parts, a front end consisting web UI and query optimizer, a master consisting REST API server and coordinator and distributed query execution engine called MyriaX.  
+Figure~\ref{fig:myria_arc} shows the system architecture of Myria. It contains three parts, a front-end consisting web UI and query optimizer, a master consisting REST API server and coordinator and distributed query execution engine called MyriaX.  
 
-When a query is submitted by user, the front end translates this query into physical query plan using its query optimizer. Then it submits the physical query plan to master through REST server. The coordinator gets the physical plan from REST sever and begin to call MyriaX to execute the physical plan.
+When a query is submitted by a user, the front-end translates this query into a physical query plan using its query optimizer. Then it submits the physical query plan to the master through the REST server. The coordinator gets the physical plan from the REST sever and begins to call MyriaX to execute the physical plan.
 
-For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the visualized query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
+For example, the SQL query $SELECT \; R.*, S.*  \; WHERE \; R.x=S.y ;$ can be translated to the query plan shown in Figure~\ref{fig:query_plan}. The semantics of the query plan is a distributed hash join of two tables, $R$ and $S$. We first need to hash each table according to the joined fields. Then tuples are shuffled by their hash results to different workers. At each worker, the shuffled tuples are joined locally. A query fragment is a subtree of the query execution plan that is separated from the rest of the plan by a network boundary. The example has three query fragments denoted by different colors.
 
 Each query fragment runs in a separate thread on each worker and is separated from other query fragments by a network boundary. Myria's execution model is asynchronous and pull-based within one fragment and push-based between fragments. This means that within one query fragment an operator calls its children to fetch data (\texttt{fetchNextReady}). A child can either return \texttt{null} if no or not enough data is ready or a tuple batch. The query fragments form a DAG. inside one query fragment, the operators form a tree. Fragment leaves and roots are typically I/O operators. When a root operator in a query fragment is a shuffle producer, it shuffles tuples to other fragments.
 
@@ -97,7 +97,7 @@ Each query fragment runs in a separate thread on each worker and is separated fr
   \label{fig:query_plan}
 \end{figure}
 
-The Myria database is written in Java and communicates using protocol buffers. The Myria web front end server is written in Python and runs on Google App Engine\footnote{\url{https://developers.google.com/appengine/}}.
+The Myria database is written in Java and communicates using protocol buffers. The Myria web front-end server is written in Python and runs on Google App Engine\footnote{\url{https://developers.google.com/appengine/}}.
 
 
 \subsection{Goals}
@@ -134,7 +134,7 @@ Tools to visualize query plans for example in SQL Server, as used to improve per
 \section{Design and implementation}
 
 \subsection{System Design}
-Figure~\ref{fig:vis_arch} shows the architecture of our visualization system. We log relevant events in each worker. After the execution of a query, logs stored in workers are collected by the log coordinator on the maser node and then aggregated and  stored to the log database. When there is a request of visualization data from the web UI, the visualization REST server will extract the specific data requested from the log DB and transform it to the JSON format and send it to web UI.  The aim of this design is to have the minimal affect on the query performance yet make the visualization system highly modular for future improvement. For example, using the REST api, anyone can implement their own visualization front end to meet special need.
+Figure~\ref{fig:vis_arch} shows the architecture of our visualization system. We log relevant events in each worker. After executing a query, logs stored in workers are collected by the log coordinator on the maser node and then aggregated and  stored to the log database. When there is a request for visualization data from the web UI, the visualization REST server will extract the specific data requested from the log DB and transform it to the JSON format and send it to web UI.  The aim of this design is to have the minimal affect on the query performance yet make the visualization system highly modular for future improvement. For example, using the REST API, anyone can implement their own visualization front-end to meet special need.
 
 \begin{figure}
  \begin{center}
@@ -151,9 +151,9 @@ In Section~\ref{sec:logging} and \ref{sec:collect}, we will describe how we coll
 
 In our visualization, we want to capture the state of operators, query fragments, and workers. A state is similar to a span in Dapper\cite{sigelman2010dapper}.
 
-The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators. In the logs we look for events that indicate a state change. For each state we want to visualize when the transitions happened.
+The state of a query fragment depends on the state of the operators inside it and the state of a worker depends on the state of the query fragments that are running on it. Consequently, we only need to capture the state of query fragments per worker. In order to capture state changes, we log events and state changes of operators.
 
-Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning. Note that sleep and wait are different. Waiting means that an operator is waiting for child operator to return from a function call and sleep means that an operator has to be woken up by new incoming data.
+Not all operators have the same states. A consumer for example does not have a wait, compute or send state. Table~\ref{tbl:state} shows the different states operators can be in and briefly describes their meaning. Note that sleep and wait are different. Waiting means that an operator is waiting for child operator to return from a function call and sleep means that an operator has to be woken up by new incoming data to the fragment.
 
 \begin{table}[h]
 \begin{tabularx}{\textwidth}{ l|X|X|X }
@@ -175,7 +175,7 @@ send & sending data to consumer over network & - & - \\
 \label{tbl:state}
 \end{table}
 
-In order to capture these states we have to log events that indicate their beginning and their end. An operator can only be in one state at a time. Consequently, the states can be reconstructed from the logs without any information about which events belong to each other. Since we also log the time of the events we can reconstruct when an operator changes its state and determine how long it has been in a certain state. We don't expect clock skew to be a problem because the intervals are coarse grained enough.
+In order to capture these states we have to log events that indicate their beginning and their end. An operator can only be in one state at a time. Consequently, the states can be reconstructed from the logs without any information about which events belong to each other. Since we also log the time of the events we can reconstruct when an operator changes its state and determine how long it has been in a certain state. We do not expect clock skew to be a problem because the intervals are coarse grained enough.
 
 No all transitions between states are possible. For example, the wait state can only be reached from the compute state. A way to interpret this is that wait and compute are a sub-states of another state work. This interpretation is useful since a set of computes and waits can be grouped together because they were triggered by a call to \texttt{fetchNextReady} and end with a return from the function. We use this information in the visualization of operator states.
 
@@ -190,11 +190,11 @@ The state of a worker is ambiguous because multiple threads can be executing mul
 \subsection{Log collection}
 \label{sec:collect}
 
-For logging, we use \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. We use dedicated logs to enable us to use asynchronous logs and keep the effect on query execution small. Since logs are collected on different workers, we need to collect them on one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria worker, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
+For logging, we use \emph{slf4j}\footnote{\url{http://www.slf4j.org}}, a logging API, which is implemented by different logging frameworks. Dedicated logs enable us to use asynchronous logs and keep the effect on query execution small. Since logs are collected on different workers, we need to collect them to one machine (in our case the Myria master) that analyzes the data and creates the visualizations. The collecting server is a Myria master, which means that we can use its database to store the logs and then read from when we create the visualization. We have not implemented storing the data in the database yet but cache the parsed results in a compressed file on the master.
 
 This architecture of distributed loggers and collectors is similar to the collection pipeline proposed in Dapper\cite{sigelman2010dapper}.
 
-Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous JavaScript calls to a server.} from the Myria through the App Engine server for Myria web. We use this indirection to aggregate data for visualization as we want the Myria REST API to stay simple.
+Logs are collected on the Myria master that offers a REST API to access the aggregated and preprocessed data. The visualization fetches data using Ajax\footnote{Asynchronous JavaScript calls to a server.} from the Myria through the App Engine server for Myria web. We use this indirection to aggregate data for visualization as we want the REST API to stay simple.
 
 
 \subsection{Visualization interface}
@@ -283,7 +283,7 @@ Figure~\ref{fig:slow_worker_operator} shows the operator level view. We can see 
 \end{figure}
 
 \noindent \textbf{Case 2: Identify bottleneck operator}.
-A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the process from Case~1, we can zoom down till operator level to find the bottleneck operator. Figure~\ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case~1 without slow worker. We can observe that the \emph{Insert} operator takes most of time when executing the query fragment. This implies that this query plan is I/O bound. Writing the result to the database is the bottleneck of this query.
+A specific operator could be the bottleneck of the whole query execution even in the absence of skew or slow worker. This can be also identified easily through exploration on the visualization on different levels. Following the process from Case~1, we can zoom in to the operator level to find the bottleneck operator. Figure~\ref{fig:bottleneck_operator} shows the operator level view of the same query plan as Case~1 without the slow worker. We can observe that the \emph{Insert} operator takes most of time when executing the query fragment. This implies that this query plan is I/O bound. Writing the result to the database is the bottleneck of this query.
 
 \begin{figure}[h]
   \begin{center}
@@ -321,9 +321,9 @@ Another small improvement that we plan to implement is to show how many tuples w
 \subsection{Performance}
 \label{sec:performance}
 
-We plan to improve the performance of the backend by storing the data in the Myria database as described in Section~\ref{sec:collect}. This will also simplify the code that analyzes the logs as we can issue queries to the database instead of calculating for example joins manually.
+We plan to improve the performance of the back-end by storing the data in the Myria database as described in Section~\ref{sec:collect}. This will also simplify the code that analyzes the logs as we can issue queries to the database instead of calculating for example joins manually.
 
-The performance of the front end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
+The performance of the front-end will be improved by adapting the data schema to a format that integrates more tightly with the visualization and removes redundant information.
 
 % \subsection{Estimate computation/network overhead}
 % \label{sec:overhead}
